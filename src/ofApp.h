@@ -20,6 +20,6 @@ class ofApp : public ofBaseApp{
     
         ofxSyphonClient mClient;
     
-        ofx::IO::SLIPEncoding slip;
+
 		
 };

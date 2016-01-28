@@ -63,10 +63,13 @@ void ofApp::draw(){
     m.addBlobArg(imgAsBuffer);
     sender.sendMessage(m);
 
- 
+    ofBuffer slipBuffer;
+    ofx::IO::SLIPEncoding slip;
+    slip.encode(imgAsBuffer, slipBuffer);
+    
     ofxOscMessage s;
     s.setAddress("/SLIPimage");
-    s.addBlobArg(slip.encode(imgAsBuffer));
+    s.addBlobArg(slipBuffer);
     sender.sendMessage(s);
     
     
