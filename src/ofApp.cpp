@@ -61,15 +61,30 @@ void ofApp::draw(){
     ofxOscMessage m;
     m.setAddress("/image");
     m.addBlobArg(imgAsBuffer);
-    sender.sendMessage(m);
+    
+    // sender.sendMessage(m);
+    // this code come from ofxOscSender::sendMessage in ofxOscSender.cpp
+    static const int OUTPUT_BUFFER_SIZE = 327680;
+    char buffer[OUTPUT_BUFFER_SIZE];
+    osc::OutboundPacketStream p( buffer, OUTPUT_BUFFER_SIZE );
 
-    ofBuffer slipBuffer;
+    // serialise the message
+    bool wrapInBundle = false; // TODO turn this into a parameter
+    if(wrapInBundle) p << osc::BeginBundleImmediate;
+    appendMessage( m, p );	
+
+    if(wrapInBundle) p << osc::EndBundle;
+
     ofx::IO::SLIPEncoding slip;
-    slip.encode(imgAsBuffer, slipBuffer);
+    ofx::IO::ByteBuffer original(buffer); 
+    ofx::IO::ByteBuffer encoded;
+    slip.encode(original, encoded);
     
     ofxOscMessage s;
+    ofBuffer slipBuffer;
+    slipBuffer.append(reinterpret_cast<const char*>( encoded.getPtr()), encoded.size()); // getPtr() returns the const char* of the underlying buffer
     s.setAddress("/SLIPimage");
-    s.addBlobArg(slipBuffer);
+    s.addBlobArg(slipBuffer); 
     sender.sendMessage(s);
     
     
@@ -88,3 +103,42 @@ void ofApp::draw(){
 
 }
 
+void ofApp::appendMessage( ofxOscMessage& message, osc::OutboundPacketStream& p )
+{
+    p << osc::BeginMessage( message.getAddress().c_str() );
+	for ( int i=0; i< message.getNumArgs(); ++i )
+	{
+		if ( message.getArgType(i) == OFXOSC_TYPE_INT32 )
+			p << message.getArgAsInt32( i );
+		else if ( message.getArgType(i) == OFXOSC_TYPE_INT64 )
+			p << (osc::int64)message.getArgAsInt64( i );
+		else if ( message.getArgType( i ) == OFXOSC_TYPE_FLOAT )
+			p << message.getArgAsFloat( i );
+		else if ( message.getArgType( i ) == OFXOSC_TYPE_DOUBLE )
+			p << message.getArgAsDouble( i );
+		else if ( message.getArgType( i ) == OFXOSC_TYPE_STRING || message.getArgType( i ) == OFXOSC_TYPE_SYMBOL)
+			p << message.getArgAsString( i ).c_str();
+		else if ( message.getArgType( i ) == OFXOSC_TYPE_CHAR )
+			p << message.getArgAsChar( i );
+		else if ( message.getArgType( i ) == OFXOSC_TYPE_MIDI_MESSAGE )
+			p << message.getArgAsMidiMessage( i );
+		else if ( message.getArgType( i ) == OFXOSC_TYPE_TRUE || message.getArgType( i ) == OFXOSC_TYPE_FALSE )
+			p << message.getArgAsBool( i );
+		else if ( message.getArgType( i ) == OFXOSC_TYPE_TRIGGER )
+			p << message.getArgAsTrigger( i );
+		else if ( message.getArgType( i ) == OFXOSC_TYPE_TIMETAG )
+			p << (osc::int64)message.getArgAsTimetag( i );
+		//else if ( message.getArgType( i ) == OFXOSC_TYPE_RGBA_COLOR )
+		//	p << message.getArgAsRgbaColor( i );
+        else if ( message.getArgType( i ) == OFXOSC_TYPE_BLOB ){
+            ofBuffer buff = message.getArgAsBlob(i);
+            osc::Blob b(buff.getData(), (unsigned long)buff.size());
+            p << b; 
+		}else
+		{
+			ofLogError("ofxOscSender") << "appendMessage(): bad argument type " << message.getArgType( i );
+			assert( false );
+		}
+	}
+	p << osc::EndMessage;
+}
