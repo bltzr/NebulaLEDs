@@ -12,6 +12,37 @@ void ofApp::setup(){
 
     ofSetWindowTitle("NebulaLEDs");
     
+    
+    std::vector<ofx::IO::SerialDeviceInfo> devicesInfo = ofx::IO::SerialDeviceUtils::listDevices();
+    
+    ofLogNotice("ofApp::setup") << "Connected Devices: ";
+    
+    for (std::size_t i = 0; i < devicesInfo.size(); ++i)
+    {
+        ofLogNotice("ofApp::setup") << "\t" << devicesInfo[i];
+    }
+    
+    if (!devicesInfo.empty())
+    {
+        // Connect to the first matching device.
+        bool success = device.setup(devicesInfo[0], 115200);
+        
+        if(success)
+        {
+            device.registerAllEvents(this);
+            
+            ofLogNotice("ofApp::setup") << "Successfully setup " << devicesInfo[0];
+        }
+        else
+        {
+            ofLogNotice("ofApp::setup") << "Unable to setup " << devicesInfo[0];
+        }
+    }
+    else
+    {
+        ofLogNotice("ofApp::setup") << "No devices connected.";
+    }
+    
     // open an outgoing connection to HOST:PORT
     sender.setup(HOST, PORT);
     
@@ -27,6 +58,10 @@ void ofApp::setup(){
 void ofApp::update(){
 
 
+}
+
+void ofApp::exit(){
+    device.unregisterAllEvents(this);
 }
 
 //--------------------------------------------------------------
@@ -76,9 +111,11 @@ void ofApp::draw(){
 
     ofx::IO::SLIPEncoding slip;
     ofx::IO::ByteBuffer original(p.Data(),p.Size());
+    device.send(original); // a priori ce truc encode en SLIP et transmet au Teensy ˆ tester
+    
     ofx::IO::ByteBuffer encoded;
     slip.encode(original, encoded);
-    
+
     ofxOscMessage s;
     ofBuffer slipBuffer;
     ofLogNotice("slip") << "original size : " << original.size();
@@ -142,4 +179,22 @@ void ofApp::appendMessage( ofxOscMessage& message, osc::OutboundPacketStream& p 
 		}
 	}
 	p << osc::EndMessage;
+}
+
+void ofApp::onSerialBuffer(const ofx::IO::SerialBufferEventArgs& args)
+{
+    // Decoded serial packets will show up here.
+    SerialMessage message(args.getBuffer().toString(), "", 255);
+    serialMessages.push_back(message);
+}
+
+
+void ofApp::onSerialError(const ofx::IO::SerialBufferErrorEventArgs& args)
+{
+    // Errors and their corresponding buffer (if any) will show up here.
+    SerialMessage message(args.getBuffer().toString(),
+                          args.getException().displayText(),
+                          500);
+    
+    serialMessages.push_back(message);
 }
