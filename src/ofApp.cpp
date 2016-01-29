@@ -56,10 +56,10 @@ void ofApp::draw(){
     
     ofBuffer imgAsBuffer;
     imgAsBuffer.clear();
-    imgAsBuffer.append((const char*)pixels.getData(),pixels.size()-64);
+    imgAsBuffer.append((const char*)pixels.getData(),pixels.size()-5109);
     
     ofxOscMessage m;
-    m.setAddress("/image");
+    m.setAddress("/led");
     m.addBlobArg(imgAsBuffer);
     
     // sender.sendMessage(m);
@@ -69,7 +69,7 @@ void ofApp::draw(){
     osc::OutboundPacketStream p( buffer, OUTPUT_BUFFER_SIZE );
 
     // serialise the message
-    bool wrapInBundle = false; // TODO turn this into a parameter
+    bool wrapInBundle = true; // TODO turn this into a parameter
     if(wrapInBundle) p << osc::BeginBundleImmediate;
     appendMessage( m, p );
     if(wrapInBundle) p << osc::EndBundle;
@@ -84,7 +84,7 @@ void ofApp::draw(){
     ofLogNotice("slip") << "original size : " << original.size();
     ofLogNotice("slip") << "encoded size : " << encoded.size();
     slipBuffer.append(reinterpret_cast<const char*>( encoded.getPtr()), encoded.size()); // getPtr() returns the const char* of the underlying buffer
-    s.setAddress("/SLIPimage");
+    s.setAddress("/led");
     s.addBlobArg(slipBuffer); 
     sender.sendMessage(s);
     
