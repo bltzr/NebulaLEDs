@@ -9,7 +9,7 @@
 			"modernui" : 1
 		}
 ,
-		"rect" : [ 705.0, 186.0, 323.0, 453.0 ],
+		"rect" : [ 705.0, 186.0, 255.0, 476.0 ],
 		"bgcolor" : [ 0.0, 0.0, 0.0, 1.0 ],
 		"editing_bgcolor" : [ 0.32549, 0.345098, 0.372549, 1.0 ],
 		"bglocked" : 0,
@@ -40,13 +40,25 @@
 		"subpatcher_template" : "noTB_dark",
 		"boxes" : [ 			{
 				"box" : 				{
+					"id" : "obj-2",
+					"maxclass" : "newobj",
+					"numinlets" : 1,
+					"numoutlets" : 1,
+					"outlettype" : [ "" ],
+					"patching_rect" : [ 115.0, 178.0, 100.0, 22.0 ],
+					"style" : "",
+					"text" : "deferlow"
+				}
+
+			}
+, 			{
+				"box" : 				{
 					"id" : "obj-1",
-					"linecount" : 2,
 					"maxclass" : "newobj",
 					"numinlets" : 2,
 					"numoutlets" : 1,
 					"outlettype" : [ "bang" ],
-					"patching_rect" : [ 45.0, 42.0, 100.0, 35.0 ],
+					"patching_rect" : [ 37.0, 25.0, 121.0, 22.0 ],
 					"style" : "",
 					"text" : "qmetro 20 @active 1"
 				}
@@ -59,7 +71,7 @@
 					"numinlets" : 1,
 					"numoutlets" : 1,
 					"outlettype" : [ "bang" ],
-					"patching_rect" : [ 119.0, 173.0, 100.0, 22.0 ],
+					"patching_rect" : [ 111.0, 142.0, 100.0, 22.0 ],
 					"style" : "",
 					"text" : "loadbang"
 				}
@@ -74,7 +86,7 @@
 					"numinlets" : 1,
 					"numoutlets" : 2,
 					"outlettype" : [ "bang", "" ],
-					"patching_rect" : [ 45.0, 389.0, 197.0, 22.0 ],
+					"patching_rect" : [ 37.0, 421.0, 197.0, 22.0 ],
 					"style" : "",
 					"text" : "jit.window servercontext @visible 0"
 				}
@@ -89,7 +101,7 @@
 					"numinlets" : 2,
 					"numoutlets" : 1,
 					"outlettype" : [ "" ],
-					"patching_rect" : [ 119.0, 202.0, 115.0, 22.0 ],
+					"patching_rect" : [ 111.0, 219.0, 115.0, 22.0 ],
 					"style" : "",
 					"text" : "servername Fond"
 				}
@@ -105,7 +117,7 @@
 					"numinlets" : 1,
 					"numoutlets" : 2,
 					"outlettype" : [ "", "" ],
-					"patching_rect" : [ 45.0, 342.0, 80.0, 35.0 ],
+					"patching_rect" : [ 37.0, 374.0, 80.0, 35.0 ],
 					"style" : ""
 				}
 
@@ -119,7 +131,7 @@
 					"numinlets" : 1,
 					"numoutlets" : 2,
 					"outlettype" : [ "erase", "bang" ],
-					"patching_rect" : [ 45.0, 281.0, 57.0, 22.0 ],
+					"patching_rect" : [ 37.0, 313.0, 57.0, 22.0 ],
 					"style" : "",
 					"text" : "t erase b"
 				}
@@ -134,7 +146,7 @@
 					"numinlets" : 1,
 					"numoutlets" : 2,
 					"outlettype" : [ "bang", "" ],
-					"patching_rect" : [ 45.0, 312.0, 145.0, 22.0 ],
+					"patching_rect" : [ 37.0, 344.0, 145.0, 22.0 ],
 					"style" : "",
 					"text" : "jit.gl.render servercontext"
 				}
@@ -151,7 +163,7 @@
 					"numinlets" : 2,
 					"numoutlets" : 1,
 					"outlettype" : [ "" ],
-					"patching_rect" : [ 96.0, 237.0, 117.0, 35.0 ],
+					"patching_rect" : [ 88.0, 254.0, 117.0, 35.0 ],
 					"style" : "",
 					"text" : "jit.gl.syphonserver @servername Fond"
 				}
@@ -166,7 +178,7 @@
 					"numinlets" : 1,
 					"numoutlets" : 2,
 					"outlettype" : [ "bang", "" ],
-					"patching_rect" : [ 45.0, 93.500015, 34.0, 22.0 ],
+					"patching_rect" : [ 37.0, 62.500015, 34.0, 22.0 ],
 					"style" : "",
 					"text" : "t b l"
 				}
@@ -179,7 +191,7 @@
 					"numinlets" : 1,
 					"numoutlets" : 2,
 					"outlettype" : [ "jit_matrix", "" ],
-					"patching_rect" : [ 96.0, 130.0, 173.0, 22.0 ],
+					"patching_rect" : [ 88.0, 99.0, 121.0, 22.0 ],
 					"style" : "",
 					"text" : "jit.noise 4 char 45 45"
 				}
@@ -198,6 +210,15 @@
 , 			{
 				"patchline" : 				{
 					"destination" : [ "obj-77", 0 ],
+					"disabled" : 0,
+					"hidden" : 0,
+					"source" : [ "obj-2", 0 ]
+				}
+
+			}
+, 			{
+				"patchline" : 				{
+					"destination" : [ "obj-2", 0 ],
 					"disabled" : 0,
 					"hidden" : 0,
 					"source" : [ "obj-4", 0 ]
@@ -263,7 +284,7 @@
 					"destination" : [ "obj-75", 0 ],
 					"disabled" : 0,
 					"hidden" : 0,
-					"midpoints" : [ 128.5, 230.0, 105.5, 230.0 ],
+					"midpoints" : [ 120.5, 247.0, 97.5, 247.0 ],
 					"source" : [ "obj-77", 0 ]
 				}
 
