@@ -71,17 +71,18 @@ void ofApp::draw(){
     // serialise the message
     bool wrapInBundle = false; // TODO turn this into a parameter
     if(wrapInBundle) p << osc::BeginBundleImmediate;
-    appendMessage( m, p );	
-
+    appendMessage( m, p );
     if(wrapInBundle) p << osc::EndBundle;
 
     ofx::IO::SLIPEncoding slip;
-    ofx::IO::ByteBuffer original(buffer); 
+    ofx::IO::ByteBuffer original(p.Data(),p.Size());
     ofx::IO::ByteBuffer encoded;
     slip.encode(original, encoded);
     
     ofxOscMessage s;
     ofBuffer slipBuffer;
+    ofLogNotice("slip") << "original size : " << original.size();
+    ofLogNotice("slip") << "encoded size : " << encoded.size();
     slipBuffer.append(reinterpret_cast<const char*>( encoded.getPtr()), encoded.size()); // getPtr() returns the const char* of the underlying buffer
     s.setAddress("/SLIPimage");
     s.addBlobArg(slipBuffer); 
