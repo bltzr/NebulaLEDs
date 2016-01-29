@@ -9,7 +9,7 @@
 			"modernui" : 1
 		}
 ,
-		"rect" : [ 705.0, 186.0, 265.0, 461.0 ],
+		"rect" : [ 705.0, 186.0, 255.0, 476.0 ],
 		"bgcolor" : [ 0.0, 0.0, 0.0, 1.0 ],
 		"editing_bgcolor" : [ 0.32549, 0.345098, 0.372549, 1.0 ],
 		"bglocked" : 0,
@@ -86,7 +86,7 @@
 					"numinlets" : 1,
 					"numoutlets" : 2,
 					"outlettype" : [ "bang", "" ],
-					"patching_rect" : [ 37.0, 406.0, 197.0, 22.0 ],
+					"patching_rect" : [ 37.0, 421.0, 197.0, 22.0 ],
 					"style" : "",
 					"text" : "jit.window servercontext @visible 0"
 				}
@@ -117,7 +117,7 @@
 					"numinlets" : 1,
 					"numoutlets" : 2,
 					"outlettype" : [ "", "" ],
-					"patching_rect" : [ 37.0, 359.0, 80.0, 35.0 ],
+					"patching_rect" : [ 37.0, 374.0, 80.0, 35.0 ],
 					"style" : ""
 				}
 
@@ -131,7 +131,7 @@
 					"numinlets" : 1,
 					"numoutlets" : 2,
 					"outlettype" : [ "erase", "bang" ],
-					"patching_rect" : [ 37.0, 298.0, 57.0, 22.0 ],
+					"patching_rect" : [ 37.0, 313.0, 57.0, 22.0 ],
 					"style" : "",
 					"text" : "t erase b"
 				}
@@ -146,7 +146,7 @@
 					"numinlets" : 1,
 					"numoutlets" : 2,
 					"outlettype" : [ "bang", "" ],
-					"patching_rect" : [ 37.0, 329.0, 145.0, 22.0 ],
+					"patching_rect" : [ 37.0, 344.0, 145.0, 22.0 ],
 					"style" : "",
 					"text" : "jit.gl.render servercontext"
 				}
