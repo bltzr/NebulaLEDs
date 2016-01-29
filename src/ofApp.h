@@ -8,7 +8,7 @@
 #define HOST "localhost"
 #define PORT 12345
 
-class ofApp : public ofBaseApp{
+class ofApp : public ofBaseApp {
 
 	public:
 		void setup();
@@ -20,6 +20,7 @@ class ofApp : public ofBaseApp{
     
         ofxSyphonClient mClient;
     
-
+  private: 
+    void appendMessage( ofxOscMessage& message, osc::OutboundPacketStream& p );
 		
 };
