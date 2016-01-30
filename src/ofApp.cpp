@@ -12,36 +12,7 @@ void ofApp::setup(){
 
     ofSetWindowTitle("NebulaLEDs");
     
-    
-    std::vector<ofx::IO::SerialDeviceInfo> devicesInfo = ofx::IO::SerialDeviceUtils::listDevices();
-    
-    ofLogNotice("ofApp::setup") << "Connected Devices: ";
-    
-    for (std::size_t i = 0; i < devicesInfo.size(); ++i)
-    {
-        ofLogNotice("ofApp::setup") << "\t" << devicesInfo[i];
-    }
-    
-    if (!devicesInfo.empty())
-    {
-        // Connect to the first matching device.
-        bool success = device.setup(devicesInfo[0], 115200);
-        
-        if(success)
-        {
-            device.registerAllEvents(this);
-            
-            ofLogNotice("ofApp::setup") << "Successfully setup " << devicesInfo[0];
-        }
-        else
-        {
-            ofLogNotice("ofApp::setup") << "Unable to setup " << devicesInfo[0];
-        }
-    }
-    else
-    {
-        ofLogNotice("ofApp::setup") << "No devices connected.";
-    }
+    bSendSerialMessage = false;
     
     // open an outgoing connection to HOST:PORT
     sender.setup(HOST, PORT);
@@ -52,6 +23,17 @@ void ofApp::setup(){
 
     ofSetFrameRate(60); // if vertical sync is off, we can go a bit fast... this caps the framerate at 60fps.
     
+    serial.listDevices();
+    vector <ofSerialDeviceInfo> deviceList = serial.getDeviceList();
+    
+    // this should be set to whatever com port your serial device is connected to.
+    // (ie, COM4 on a pc, /dev/tty.... on linux, /dev/tty... on a mac)
+    // arduino users check in arduino app....
+    int baud = 9600;
+    //serial.setup(0, baud); //open the first device
+    //serial.setup("COM4", baud); // windows example
+    serial.setup("/dev/tty.usbmodem1369841", baud); // mac osx example
+    //serial.setup("/dev/ttyUSB0", baud); //linux example
 }
 
 //--------------------------------------------------------------
@@ -60,9 +42,7 @@ void ofApp::update(){
 
 }
 
-void ofApp::exit(){
-    device.unregisterAllEvents(this);
-}
+
 
 //--------------------------------------------------------------
 void ofApp::draw(){
@@ -111,31 +91,29 @@ void ofApp::draw(){
 
     ofx::IO::SLIPEncoding slip;
     ofx::IO::ByteBuffer original(p.Data(),p.Size());
-    device.send(original); // a priori ce truc encode en SLIP et transmet au Teensy ˆ tester
+    
+    //device.send(original); // a priori ce truc encode en SLIP et transmet au Teensy ˆ tester
     
     ofx::IO::ByteBuffer encoded;
     slip.encode(original, encoded);
+    
+    // device.send(encoded);
+    
+
+
+
 
     ofxOscMessage s;
     ofBuffer slipBuffer;
-    ofLogNotice("slip") << "original size : " << original.size();
-    ofLogNotice("slip") << "encoded size : " << encoded.size();
+    //ofLogNotice("slip") << "original size : " << original.size();
+    //ofLogNotice("slip") << "encoded size : " << encoded.size();
     slipBuffer.append(reinterpret_cast<const char*>( encoded.getPtr()), encoded.size()); // getPtr() returns the const char* of the underlying buffer
     s.setAddress("/led");
     s.addBlobArg(slipBuffer); 
     sender.sendMessage(s);
     
-    
-    // feedImg.setFromPixels(feedPxl);
-    
-    // mClient.bind();
-    
-    //ofTexture tex = mClient.getTexture();
-    //ofPixels & pixels = tex.readToPixels();
-    
-    
-    //ofPixels & pixels = mClient.getTextureReference().readToPixels(pixels);
-    // ofTexture Nebula = mClient.getTexture()();
+    serial.writeBytes(reinterpret_cast<unsigned char*>( encoded.getPtr()), encoded.size());
+
 
     
 
@@ -181,20 +159,4 @@ void ofApp::appendMessage( ofxOscMessage& message, osc::OutboundPacketStream& p 
 	p << osc::EndMessage;
 }
 
-void ofApp::onSerialBuffer(const ofx::IO::SerialBufferEventArgs& args)
-{
-    // Decoded serial packets will show up here.
-    SerialMessage message(args.getBuffer().toString(), "", 255);
-    serialMessages.push_back(message);
-}
 
-
-void ofApp::onSerialError(const ofx::IO::SerialBufferErrorEventArgs& args)
-{
-    // Errors and their corresponding buffer (if any) will show up here.
-    SerialMessage message(args.getBuffer().toString(),
-                          args.getException().displayText(),
-                          500);
-    
-    serialMessages.push_back(message);
-}
