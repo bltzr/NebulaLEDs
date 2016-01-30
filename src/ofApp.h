@@ -3,7 +3,7 @@
 #include "ofMain.h"
 #include "ofxSyphon.h"
 #include "ofxOsc.h"
-#include "ofxSerial.h"
+#include "SLIPEncoding.h"
 
 #define HOST "localhost"
 #define PORT 12345
@@ -37,7 +37,6 @@ class ofApp : public ofBaseApp {
 		void setup();
 		void update();
 		void draw();
-        void exit();
     
         ofxOscSender sender;
         ofxOscSender PWMsender;
@@ -46,10 +45,7 @@ class ofApp : public ofBaseApp {
     
     bool		bSendSerialMessage;			// a flag for sending serial
     
-    void onSerialBuffer(const ofx::IO::SerialBufferEventArgs& args);
-    void onSerialError(const ofx::IO::SerialBufferErrorEventArgs& args);
-    ofx::IO::PacketSerialDevice device;
-    std::vector<SerialMessage> serialMessages;
+
     
     ofSerial	serial;
     

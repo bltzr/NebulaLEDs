@@ -42,9 +42,7 @@ void ofApp::update(){
 
 }
 
-void ofApp::exit(){
-    device.unregisterAllEvents(this);
-}
+
 
 //--------------------------------------------------------------
 void ofApp::draw(){
@@ -161,20 +159,4 @@ void ofApp::appendMessage( ofxOscMessage& message, osc::OutboundPacketStream& p 
 	p << osc::EndMessage;
 }
 
-void ofApp::onSerialBuffer(const ofx::IO::SerialBufferEventArgs& args)
-{
-    // Decoded serial packets will show up here.
-    SerialMessage message(args.getBuffer().toString(), "", 255);
-    serialMessages.push_back(message);
-}
 
-
-void ofApp::onSerialError(const ofx::IO::SerialBufferErrorEventArgs& args)
-{
-    // Errors and their corresponding buffer (if any) will show up here.
-    SerialMessage message(args.getBuffer().toString(),
-                          args.getException().displayText(),
-                          500);
-    
-    serialMessages.push_back(message);
-}
