@@ -27,6 +27,8 @@ public:
     std::string message;
     std::string exception;
     int fade;
+    
+    
 };
 
 class ofApp : public ofBaseApp {
@@ -42,10 +44,14 @@ class ofApp : public ofBaseApp {
     
         ofxSyphonClient mClient;
     
+    bool		bSendSerialMessage;			// a flag for sending serial
+    
     void onSerialBuffer(const ofx::IO::SerialBufferEventArgs& args);
     void onSerialError(const ofx::IO::SerialBufferErrorEventArgs& args);
     ofx::IO::PacketSerialDevice device;
     std::vector<SerialMessage> serialMessages;
+    
+    ofSerial	serial;
     
   private: 
     void appendMessage( ofxOscMessage& message, osc::OutboundPacketStream& p );
