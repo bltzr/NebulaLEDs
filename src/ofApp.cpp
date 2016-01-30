@@ -116,21 +116,9 @@ void ofApp::draw(){
     ofx::IO::ByteBuffer encoded;
     slip.encode(original, encoded);
     
+    device.send(encoded);
 
-    /*
 
-    // The serial device can throw exeptions.
-    try
-    {
-        
-           device.send(encoded);
-    }
-    catch (const std::exception& exc)
-    {
-        ofLogError("ofApp::update") << exc.what();
-    }
-
-*/
 
     ofxOscMessage s;
     ofBuffer slipBuffer;
