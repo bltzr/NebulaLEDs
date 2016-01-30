@@ -44,12 +44,12 @@ class ofApp : public ofBaseApp {
     
     void onSerialBuffer(const ofx::IO::SerialBufferEventArgs& args);
     void onSerialError(const ofx::IO::SerialBufferErrorEventArgs& args);
-    
+    ofx::IO::PacketSerialDevice device;
     std::vector<SerialMessage> serialMessages;
     
   private: 
     void appendMessage( ofxOscMessage& message, osc::OutboundPacketStream& p );
-    ofx::IO::PacketSerialDevice_<ofx::IO::SLIPEncoding, 0, 65536> device;
+    //ofx::IO::PacketSerialDevice_<ofx::IO::SLIPEncoding, 0, 65536> device;
 
     
 };

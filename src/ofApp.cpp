@@ -12,7 +12,6 @@ void ofApp::setup(){
 
     ofSetWindowTitle("NebulaLEDs");
     
-    
     std::vector<ofx::IO::SerialDeviceInfo> devicesInfo = ofx::IO::SerialDeviceUtils::listDevices();
     
     ofLogNotice("ofApp::setup") << "Connected Devices: ";
@@ -111,31 +110,38 @@ void ofApp::draw(){
 
     ofx::IO::SLIPEncoding slip;
     ofx::IO::ByteBuffer original(p.Data(),p.Size());
-    device.send(original); // a priori ce truc encode en SLIP et transmet au Teensy ˆ tester
+    
+    //device.send(original); // a priori ce truc encode en SLIP et transmet au Teensy ˆ tester
     
     ofx::IO::ByteBuffer encoded;
     slip.encode(original, encoded);
+    
+
+    /*
+
+    // The serial device can throw exeptions.
+    try
+    {
+        
+           device.send(encoded);
+    }
+    catch (const std::exception& exc)
+    {
+        ofLogError("ofApp::update") << exc.what();
+    }
+
+*/
 
     ofxOscMessage s;
     ofBuffer slipBuffer;
-    ofLogNotice("slip") << "original size : " << original.size();
-    ofLogNotice("slip") << "encoded size : " << encoded.size();
+    //ofLogNotice("slip") << "original size : " << original.size();
+    //ofLogNotice("slip") << "encoded size : " << encoded.size();
     slipBuffer.append(reinterpret_cast<const char*>( encoded.getPtr()), encoded.size()); // getPtr() returns the const char* of the underlying buffer
     s.setAddress("/led");
     s.addBlobArg(slipBuffer); 
     sender.sendMessage(s);
     
-    
-    // feedImg.setFromPixels(feedPxl);
-    
-    // mClient.bind();
-    
-    //ofTexture tex = mClient.getTexture();
-    //ofPixels & pixels = tex.readToPixels();
-    
-    
-    //ofPixels & pixels = mClient.getTextureReference().readToPixels(pixels);
-    // ofTexture Nebula = mClient.getTexture()();
+
 
     
 
