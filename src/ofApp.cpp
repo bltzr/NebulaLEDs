@@ -29,7 +29,7 @@ void ofApp::setup(){
     // this should be set to whatever com port your serial device is connected to.
     // (ie, COM4 on a pc, /dev/tty.... on linux, /dev/tty... on a mac)
     // arduino users check in arduino app....
-    int baud = 9600;
+    int baud = 115200;
     //serial.setup(0, baud); //open the first device
     //serial.setup("COM4", baud); // windows example
     serial.setup("/dev/tty.usbmodem1369841", baud); // mac osx example
@@ -77,7 +77,6 @@ void ofApp::draw(){
     m.setAddress("/led");
     m.addBlobArg(imgAsBuffer);
     
-    // sender.sendMessage(m);
     // this code come from ofxOscSender::sendMessage in ofxOscSender.cpp
     static const int OUTPUT_BUFFER_SIZE = 327680;
     char buffer[OUTPUT_BUFFER_SIZE];
@@ -92,14 +91,10 @@ void ofApp::draw(){
     ofx::IO::SLIPEncoding slip;
     ofx::IO::ByteBuffer original(p.Data(),p.Size());
     
-    //device.send(original); // a priori ce truc encode en SLIP et transmet au Teensy ˆ tester
-    
     ofx::IO::ByteBuffer encoded;
     slip.encode(original, encoded);
-    
-    // device.send(encoded);
-    
 
+    
 
 
 
