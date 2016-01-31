@@ -38,16 +38,18 @@ class ofApp : public ofBaseApp {
 		void update();
 		void draw();
     
+        ofFbo fbo;
+    
         ofxOscSender sender;
         ofxOscSender PWMsender;
     
         ofxSyphonClient mClient;
+        ofxSyphonClient tClient;
     
-    bool		bSendSerialMessage;			// a flag for sending serial
+        bool		bSendSerialMessage;			// a flag for sending serial
+        bool wrapInBundle = true; // TODO turn this into a parameter
     
-
-    
-    ofSerial	serial;
+        ofSerial	serial;
     
   private: 
     void appendMessage( ofxOscMessage& message, osc::OutboundPacketStream& p );

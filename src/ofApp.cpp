@@ -20,6 +20,7 @@ void ofApp::setup(){
     mClient.setup();
     
     mClient.set("Fond","Max");
+    tClient.set("Tour","Max");
 
     ofSetFrameRate(60); // if vertical sync is off, we can go a bit fast... this caps the framerate at 60fps.
     
@@ -31,27 +32,15 @@ void ofApp::setup(){
     // arduino users check in arduino app....
     int baud = 115200;
     //serial.setup(0, baud); //open the first device
-    //serial.setup("COM4", baud); // windows example
     serial.setup("/dev/tty.usbmodem1369841", baud); // mac osx example
-    //serial.setup("/dev/ttyUSB0", baud); //linux example
+    
+
 }
 
 //--------------------------------------------------------------
 void ofApp::update(){
 
-
-}
-
-
-
-//--------------------------------------------------------------
-void ofApp::draw(){
-    
-    // Clear with alpha, so we can capture via syphon and composite elsewhere should we want.
-    glClearColor(0.0, 0.0, 0.0, 0.0);
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    
-    ofFbo fbo;
+    //ofFbo fbo;
     fbo.allocate(45, 45, GL_RGB);
     fbo.begin();
     ofClear(0,0,0);
@@ -65,9 +54,7 @@ void ofApp::draw(){
     
     fbo.readToPixels(pixels);
     
-    
-    fbo.draw(0, 0);
-    
+
     
     ofBuffer imgAsBuffer;
     imgAsBuffer.clear();
@@ -77,37 +64,100 @@ void ofApp::draw(){
     m.setAddress("/led");
     m.addBlobArg(imgAsBuffer);
     
+    // sender.sendMessage(m);
     // this code come from ofxOscSender::sendMessage in ofxOscSender.cpp
     static const int OUTPUT_BUFFER_SIZE = 327680;
     char buffer[OUTPUT_BUFFER_SIZE];
     osc::OutboundPacketStream p( buffer, OUTPUT_BUFFER_SIZE );
-
+    
     // serialise the message
-    bool wrapInBundle = true; // TODO turn this into a parameter
+
     if(wrapInBundle) p << osc::BeginBundleImmediate;
     appendMessage( m, p );
     if(wrapInBundle) p << osc::EndBundle;
-
+    
     ofx::IO::SLIPEncoding slip;
     ofx::IO::ByteBuffer original(p.Data(),p.Size());
     
     ofx::IO::ByteBuffer encoded;
     slip.encode(original, encoded);
-
     
-
-
-
-    ofxOscMessage s;
-    ofBuffer slipBuffer;
-    //ofLogNotice("slip") << "original size : " << original.size();
-    //ofLogNotice("slip") << "encoded size : " << encoded.size();
-    slipBuffer.append(reinterpret_cast<const char*>( encoded.getPtr()), encoded.size()); // getPtr() returns the const char* of the underlying buffer
-    s.setAddress("/led");
-    s.addBlobArg(slipBuffer); 
-    sender.sendMessage(s);
+    ofLogNotice("slip2") << "original size : " << original.size();
+    ofLogNotice("slip2") << "encoded size : " << encoded.size();
     
     serial.writeBytes(reinterpret_cast<unsigned char*>( encoded.getPtr()), encoded.size());
+ 
+    
+    
+  /*
+    
+    ////////////////////////////
+    // Deuxième ligne de LEDs //
+    ////////////////////////////
+    
+    ofPixels pixels2;
+    pixels.cropTo(pixels2, 25, 12, 24, 23);
+    
+    ofBuffer imgAsBuffer2;
+    imgAsBuffer2.clear();
+    imgAsBuffer2.append((const char*)pixels2.getData(),pixels2.size());
+    
+    ofLogNotice("pixels2") << "pixels2 number : " << pixels.size()-4380;
+    
+    ofxOscMessage m2;
+    m2.setAddress("/led2");
+    m2.addBlobArg(imgAsBuffer2);
+    
+    // this code come from ofxOscSender::sendMessage in ofxOscSender.cpp
+    char buffer2[OUTPUT_BUFFER_SIZE];
+    osc::OutboundPacketStream p2( buffer2, OUTPUT_BUFFER_SIZE );
+    
+    // serialise the message
+    if(wrapInBundle) p2 << osc::BeginBundleImmediate;
+    appendMessage( m2, p2 );
+    if(wrapInBundle) p2 << osc::EndBundle;
+    
+    ofx::IO::SLIPEncoding slip2;
+    ofx::IO::ByteBuffer original2(p2.Data(),p2.Size());
+    ofx::IO::ByteBuffer encoded2;
+    slip2.encode(original2, encoded2);
+    
+    ofLogNotice("slip2") << "original size : " << original.size();
+    ofLogNotice("slip2") << "encoded size : " << encoded.size();
+    
+    serial.writeBytes(reinterpret_cast<unsigned char*>( encoded2.getPtr()), encoded2.size());
+    
+    
+    ////////////////////////////////////////////////
+    // sending stuff via OSC for testing purposes //
+    ////////////////////////////////////////////////
+  
+    ofxOscMessage s;
+
+    ofBuffer slipBuffer;
+
+    slipBuffer.append(reinterpret_cast<const char*>( encoded.getPtr()), encoded.size()); // getPtr() returns the const char* of the underlying buffer
+
+    s.setAddress("/led2");
+    s.addBlobArg(slipBuffer);
+    sender.sendMessage(s);
+    */
+    
+
+}
+
+
+
+//--------------------------------------------------------------
+void ofApp::draw(){
+    
+    // Clear with alpha, so we can capture via syphon and composite elsewhere should we want.
+    glClearColor(0.0, 0.0, 0.0, 0.0);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+    
+    
+    fbo.draw(0, 0);
 
 
     
