@@ -58,7 +58,7 @@ void ofApp::update(){
     
     ofBuffer imgAsBuffer;
     imgAsBuffer.clear();
-    imgAsBuffer.append((const char*)pixels.getData(),pixels.size()-5109);
+    imgAsBuffer.append((const char*)pixels.getData(),pixels.size()-5109); // more pixels than that will cause serial transmission to fail
     
     ofxOscMessage m;
     m.setAddress("/led");
@@ -82,11 +82,39 @@ void ofApp::update(){
     ofx::IO::ByteBuffer encoded;
     slip.encode(original, encoded);
     
-    ofLogNotice("slip2") << "original size : " << original.size();
-    ofLogNotice("slip2") << "encoded size : " << encoded.size();
+    //ofLogNotice("slip2") << "original size : " << original.size();
+    ofLogNotice("slip") << "encoded size : " << encoded.size();
+    
+    // attempting to slice the output when bigger than 1024
+    /*
+    if ( encoded.size()>1024 )
+    {
+        
+        ofBuffer encodedCarryBuffer;
+        encodedCarryBuffer.clear();
+        encodedCarryBuffer.append((const char*)encoded.getCharPtr(),encoded.size());
+        //encodedCarryBuffer.
+        
+       //  = encoded.getPtr().getData()
+        
+        ofx::IO::ByteBuffer encodedCarry(encodedCarryBuffer.getData(),encodedCarryBuffer.size());
+        
+        
+        encoded.resize(1024);
+        //serial.writeBytes(reinterpret_cast<unsigned char*>( encodedCarry.getPtr()), encodedCarry.size());
+    
+    }
+     
+
+    
+    ofLogNotice("slip2") << "encoded re size : " << encoded.size();
+    
+    */
     
     serial.writeBytes(reinterpret_cast<unsigned char*>( encoded.getPtr()), encoded.size());
+    // serial.drain(); // doesn't seem to do anything...
  
+    
     
     
   /*

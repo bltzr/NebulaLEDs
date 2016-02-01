@@ -53,7 +53,7 @@ class ofApp : public ofBaseApp {
     
   private: 
     void appendMessage( ofxOscMessage& message, osc::OutboundPacketStream& p );
-    //ofx::IO::PacketSerialDevice_<ofx::IO::SLIPEncoding, 0, 65536> device;
+    // ofx::IO::SerialDevice device;
 
     
 };
