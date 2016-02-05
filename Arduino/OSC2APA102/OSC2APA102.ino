@@ -36,7 +36,6 @@ void LEDcontrol(OSCMessage &msg)
   if (msg.isInt(0))
   {
     ledController.setAPA102Brightness(msg.getInt(0));
-    FastLED.show();
   }
   else if (msg.isBlob(0))
   {
@@ -44,7 +43,6 @@ void LEDcontrol(OSCMessage &msg)
     uint8_t v[length + 4];
     int s = msg.getBlob(0, (unsigned char *)v, min(length + 4, NUM_LEDS * 3));
     memcpy((uint8_t *)leds, v + 4, max(min(s - 4, NUM_LEDS * 3), 0));
-    FastLED.show();
   }
 }
 
@@ -53,7 +51,6 @@ void LEDcontrol2(OSCMessage &msg)
   if (msg.isInt(0))
   {
     ledController2.setAPA102Brightness(msg.getInt(0));
-    //FastLED.show();
   }
   else if (msg.isBlob(0))
   {
@@ -61,7 +58,14 @@ void LEDcontrol2(OSCMessage &msg)
     uint8_t v[length + 4];
     int s = msg.getBlob(0, (unsigned char *)v, min(length + 4, NUM_LEDS2 * 3));
     memcpy((uint8_t *)leds2, v + 4, max(min(s - 4, NUM_LEDS2 * 3), 0));
-    //FastLED.show();
+  }
+}
+
+void setGlobalBrightness(OSCMessage &msg)
+{
+  if (msg.isInt(0))
+  {
+    FastLED.setBrightness(msg.getInt(0));
   }
 }
 
@@ -75,6 +79,7 @@ void onPacket(const uint8_t* buffer, size_t size) {
   if (!bundleIN.hasError()) {
     bundleIN.dispatch("/1", LEDcontrol);
     bundleIN.dispatch("/2", LEDcontrol2);
+    bundleIN.dispatch("/b", setGlobalBrightness);
   }
 }
 
@@ -112,6 +117,7 @@ void setup() {
 
 void loop() {
   serial.update();
+  FastLED.show();
 }
 
 
