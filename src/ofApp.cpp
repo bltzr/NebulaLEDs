@@ -1,18 +1,12 @@
 #include "ofApp.h"
 
-const int width = 55;
-const int height = 55;
-
-const int LEDnumb = 565;
-const int PWMnumb = 495;
-
 
 //--------------------------------------------------------------
 void ofApp::setup(){
 
     ofSetWindowTitle("NebulaLEDs");
 
-
+    receiver.setup(PORT);
     
     mClient.setup();
     tClient.setup();
@@ -88,8 +82,6 @@ void ofApp::setup(){
 //--------------------------------------------------------------
 void ofApp::update(){
 
-
-
     
     fbo.begin();
     mClient.draw(0, 0);
@@ -103,13 +95,59 @@ void ofApp::update(){
     
     fboTour.readToPixels(pixTour);
     
+    while(receiver.hasWaitingMessages()){
+        // get the next message
+        ofxOscMessage m;
+        receiver.getNextMessage(m);
+        
+        if(m.getAddress() == "/b"){
+            ofLog() << "b" << m.getArgAsInt32(0);
+            for (int i=0; i<3; i++){
+                setBrightness(i, m.getArgAsInt32(0));
+            }
+        }
+        else if(m.getAddress() == "/t"){
+            ofLog() << "t" << m.getArgAsInt32(0);
+            setBrightness(3, m.getArgAsInt32(0));
+        }
+    }
+    
     for (int i=0; i<4; i++) {
     sendLine(i);
     }
     
 }
 
+void ofApp::setBrightness(int i, int brightness) {
 
+    // check for waiting messages
+    
+        LedLine line = ledLine[i];
+        ofxOscMessage n;
+        n.setAddress(line.address);
+        n.addIntArg(brightness);
+        
+        // this code come from ofxOscSender::sendMessage in ofxOscSender.cpp
+        static const int OUTPUT_BUFFER_SIZE = 16384;
+        char buffer[OUTPUT_BUFFER_SIZE];
+        osc::OutboundPacketStream p( buffer, OUTPUT_BUFFER_SIZE );
+        
+        // serialise the message
+        
+        p << osc::BeginBundleImmediate;
+        appendMessage( n, p );
+        p << osc::EndBundle;
+        
+        ofx::IO::ByteBuffer toEncode(p.Data(),p.Size());
+        
+        try {
+            line.dev->dev.send(toEncode);
+        } catch ( serial::SerialException e) {
+            ofLogError("sendLine") << "failed to send data : " << e.what();
+            line.dev->setup();
+        }
+
+}
 
 //--------------------------------------------------------------
 void ofApp::sendLine(int i) {
@@ -167,7 +205,7 @@ void ofApp::draw(){
         img.draw(500, i*150+20, 450, 130);
     }
 
-    
+
 
 }
 

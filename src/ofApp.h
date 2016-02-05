@@ -4,7 +4,8 @@
 #include "ofxSyphon.h"
 #include "ofxSerial.h"
 #include "ofxOsc.h"
-
+#define PORT 6666
+#define NUM_MSG_STRINGS 20
 
 
 class SerialMessage
@@ -54,6 +55,7 @@ public:
     int size; // nombre de lignes ˆ prendre dans pix
     Teensy * dev;
     ofPixels pixelCrop;
+    uint8_t brightness;
     
 };
 
@@ -69,15 +71,22 @@ class ofApp : public ofBaseApp {
     
         ofxSyphonClient mClient, tClient;
     
+        ofxOscReceiver receiver;
+    
         void onSerialBuffer(const ofx::IO::SerialBufferEventArgs& args);
         void onSerialError(const ofx::IO::SerialBufferErrorEventArgs& args);
         void sendLine(int i);
-
+    void setBrightness(int line, int brightness);
+    
         Teensy device, device2;
     
         std::vector<SerialMessage> serialMessages;
     
         LedLine ledLine[4];
+    
+        int current_msg_string;
+        string msg_strings[NUM_MSG_STRINGS];
+        float timers[NUM_MSG_STRINGS];
     
     
     private:
