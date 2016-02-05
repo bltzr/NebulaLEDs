@@ -92,27 +92,10 @@ void setup() {
 
   ledController.setAPA102Brightness(1);
   ledController2.setAPA102Brightness(1);
-  for (int i = 0; i < NUM_LEDS ; i++) {
-    // Turn the LED on, then pause
-    leds[i] = CRGB::White;
-  }
-  for (int i = 0; i < NUM_LEDS2 ; i++) {
-    // Turn the LED on, then pause
-    leds2[i] = CRGB::White;
-  }
-
-
-  FastLED.show();
+  
+  FastLED.show(CRGB::White);
   delay(500);
-  for (int i = 0; i < NUM_LEDS; i++) {
-    // Now turn the LED off, then pause
-    leds[i] = CRGB::Black;
-  }
-  for (int i = 0; i < NUM_LEDS2; i++) {
-    // Now turn the LED off, then pause
-    leds2[i] = CRGB::Black;
-  }
-  FastLED.show();
+  FastLED.show(CRGB::Black);
 }
 
 void loop() {
