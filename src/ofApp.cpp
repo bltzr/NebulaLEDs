@@ -11,28 +11,76 @@ const int PWMnumb = 495;
 void ofApp::setup(){
 
     ofSetWindowTitle("NebulaLEDs");
-    
-    bSendSerialMessage = false;
-    
-    // open an outgoing connection to HOST:PORT
-    sender.setup(HOST, PORT);
+
+
     
     mClient.setup();
+    tClient.setup();
     
     mClient.set("Fond","Max");
     tClient.set("Tour","Max");
 
+    
+    // display
     ofSetFrameRate(60); // if vertical sync is off, we can go a bit fast... this caps the framerate at 60fps.
     
-    serial.listDevices();
-    vector <ofSerialDeviceInfo> deviceList = serial.getDeviceList();
     
-    // this should be set to whatever com port your serial device is connected to.
-    // (ie, COM4 on a pc, /dev/tty.... on linux, /dev/tty... on a mac)
-    // arduino users check in arduino app....
-    int baud = 115200;
-    //serial.setup(0, baud); //open the first device
-    serial.setup("/dev/tty.usbmodem1369841", baud); // mac osx example
+    fbo.allocate(45, 45, GL_RGB);
+    fbo.begin();
+    ofClear(0,0,0);
+    fbo.end();
+ 
+    
+    fboTour.allocate(22, 22, GL_RGB);
+    fboTour.begin();
+    ofClear(0,0,0);
+    fboTour.end();
+    
+    
+    // setup Serial
+    
+    std::vector<ofx::IO::SerialDeviceInfo> devicesInfo = ofx::IO::SerialDeviceUtils::listDevices();
+    
+    ofLogNotice("ofApp::setup") << "Connected Devices: ";
+    
+    device.name = "/dev/cu.usbmodem1369841";
+    device2.name = "/dev/cu.usbmodem1455771";
+    
+    device.setup();
+    device2.setup();
+    
+    //ligne 1 : Fond - T1 - /l1 - nPixels = 565 - x = 0 - h = 13
+    //ligne 2 : Fond - T1 - /l2 - nPixels = 495 - x = 13 - h = 11
+    //ligne 3 : Fond - T2 - /l1 - nPixels = 565 - x = 24 - h = 13
+    //ligne 3 : Tour - T2 - /l2 - nPixels = 459 - x = 0 - h = Tour.width
+    
+    ledLine[0].dev = &device;
+    ledLine[0].src = &pixels;
+    ledLine[0].address = "/1";
+    ledLine[0].nbPix = 565;
+    ledLine[0].offset = 0;
+    ledLine[0].size = 13;
+    
+    ledLine[1].dev = &device;
+    ledLine[1].src = &pixels;
+    ledLine[1].address = "/2";
+    ledLine[1].nbPix = 495;
+    ledLine[1].offset = 13;
+    ledLine[1].size = 11;
+
+    ledLine[2].dev = &device2;
+    ledLine[2].src = &pixels;
+    ledLine[2].address = "/1";
+    ledLine[2].nbPix = 565;
+    ledLine[2].offset = 24;
+    ledLine[2].size = 13;
+
+    ledLine[3].dev = &device2;
+    ledLine[3].src = &pixTour;
+    ledLine[3].address = "/2";
+    ledLine[3].nbPix = 459;
+    ledLine[3].offset = 0;
+    ledLine[3].size = 22;
     
 
 }
@@ -40,13 +88,8 @@ void ofApp::setup(){
 //--------------------------------------------------------------
 void ofApp::update(){
 
-    //ofFbo fbo;
-    fbo.allocate(45, 45, GL_RGB);
-    fbo.begin();
-    ofClear(0,0,0);
-    fbo.end();
-    ofPixels pixels;
-    ofImage feedImg;
+
+
     
     fbo.begin();
     mClient.draw(0, 0);
@@ -54,124 +97,54 @@ void ofApp::update(){
     
     fbo.readToPixels(pixels);
     
+    fboTour.begin();
+    tClient.draw(0, 0);
+    fboTour.end();
+    
+    fboTour.readToPixels(pixTour);
+    
+    for (int i=0; i<4; i++) {
+    sendLine(i);
+    }
+    
+}
 
+
+
+//--------------------------------------------------------------
+void ofApp::sendLine(int i) {
+
+    LedLine &line = ledLine[i];
+    //ofPixels pixelCrop;
+    line.src->cropTo(line.pixelCrop, 0 , line.offset, 45, line.size);
     
     ofBuffer imgAsBuffer;
     imgAsBuffer.clear();
-    imgAsBuffer.append((const char*)pixels.getData(),pixels.size()-5109); // more pixels than that will cause serial transmission to fail
+    imgAsBuffer.append((const char*)line.pixelCrop.getData(),line.nbPix*3);
     
     ofxOscMessage m;
-    m.setAddress("/led");
+    m.setAddress(line.address);
     m.addBlobArg(imgAsBuffer);
     
-    // sender.sendMessage(m);
     // this code come from ofxOscSender::sendMessage in ofxOscSender.cpp
-    static const int OUTPUT_BUFFER_SIZE = 327680;
+    static const int OUTPUT_BUFFER_SIZE = 16384;
     char buffer[OUTPUT_BUFFER_SIZE];
     osc::OutboundPacketStream p( buffer, OUTPUT_BUFFER_SIZE );
     
     // serialise the message
 
-    if(wrapInBundle) p << osc::BeginBundleImmediate;
+    p << osc::BeginBundleImmediate;
     appendMessage( m, p );
-    if(wrapInBundle) p << osc::EndBundle;
+    p << osc::EndBundle;
     
-    ofx::IO::SLIPEncoding slip;
-    ofx::IO::ByteBuffer original(p.Data(),p.Size());
+    ofx::IO::ByteBuffer toEncode(p.Data(),p.Size());
     
-    ofx::IO::ByteBuffer encoded;
-    slip.encode(original, encoded);
-    
-    //ofLogNotice("slip2") << "original size : " << original.size();
-    ofLogNotice("slip") << "encoded size : " << encoded.size();
-    
-    // attempting to slice the output when bigger than 1024
-    /*
-    if ( encoded.size()>1024 )
-    {
-        
-        ofBuffer encodedCarryBuffer;
-        encodedCarryBuffer.clear();
-        encodedCarryBuffer.append((const char*)encoded.getCharPtr(),encoded.size());
-        //encodedCarryBuffer.
-        
-       //  = encoded.getPtr().getData()
-        
-        ofx::IO::ByteBuffer encodedCarry(encodedCarryBuffer.getData(),encodedCarryBuffer.size());
-        
-        
-        encoded.resize(1024);
-        //serial.writeBytes(reinterpret_cast<unsigned char*>( encodedCarry.getPtr()), encodedCarry.size());
-    
+    try {
+        line.dev->dev.send(toEncode);
+    } catch ( serial::SerialException e) {
+        ofLogError("sendLine") << "failed to send data : " << e.what();
+        line.dev->setup();
     }
-     
-
-    
-    ofLogNotice("slip2") << "encoded re size : " << encoded.size();
-    
-    */
-    
-    serial.writeBytes(reinterpret_cast<unsigned char*>( encoded.getPtr()), encoded.size());
-    // serial.drain(); // doesn't seem to do anything...
- 
-    
-    
-    
-  /*
-    
-    ////////////////////////////
-    // Deuxième ligne de LEDs //
-    ////////////////////////////
-    
-    ofPixels pixels2;
-    pixels.cropTo(pixels2, 25, 12, 24, 23);
-    
-    ofBuffer imgAsBuffer2;
-    imgAsBuffer2.clear();
-    imgAsBuffer2.append((const char*)pixels2.getData(),pixels2.size());
-    
-    ofLogNotice("pixels2") << "pixels2 number : " << pixels.size()-4380;
-    
-    ofxOscMessage m2;
-    m2.setAddress("/led2");
-    m2.addBlobArg(imgAsBuffer2);
-    
-    // this code come from ofxOscSender::sendMessage in ofxOscSender.cpp
-    char buffer2[OUTPUT_BUFFER_SIZE];
-    osc::OutboundPacketStream p2( buffer2, OUTPUT_BUFFER_SIZE );
-    
-    // serialise the message
-    if(wrapInBundle) p2 << osc::BeginBundleImmediate;
-    appendMessage( m2, p2 );
-    if(wrapInBundle) p2 << osc::EndBundle;
-    
-    ofx::IO::SLIPEncoding slip2;
-    ofx::IO::ByteBuffer original2(p2.Data(),p2.Size());
-    ofx::IO::ByteBuffer encoded2;
-    slip2.encode(original2, encoded2);
-    
-    ofLogNotice("slip2") << "original size : " << original.size();
-    ofLogNotice("slip2") << "encoded size : " << encoded.size();
-    
-    serial.writeBytes(reinterpret_cast<unsigned char*>( encoded2.getPtr()), encoded2.size());
-    
-    
-    ////////////////////////////////////////////////
-    // sending stuff via OSC for testing purposes //
-    ////////////////////////////////////////////////
-  
-    ofxOscMessage s;
-
-    ofBuffer slipBuffer;
-
-    slipBuffer.append(reinterpret_cast<const char*>( encoded.getPtr()), encoded.size()); // getPtr() returns the const char* of the underlying buffer
-
-    s.setAddress("/led2");
-    s.addBlobArg(slipBuffer);
-    sender.sendMessage(s);
-    */
-    
-
 }
 
 
@@ -185,11 +158,39 @@ void ofApp::draw(){
 
     
     
-    fbo.draw(0, 0);
-
+    fbo.draw(20, 20, 450, 450);
+    fboTour.draw(20, 500, 220, 220);
+    
+    for (int i=0; i<4; i++) {
+        ofImage img;
+        img.setFromPixels(ledLine[i].pixelCrop);
+        img.draw(500, i*150+20, 450, 130);
+    }
 
     
 
+}
+
+
+void ofApp::onSerialBuffer(const ofx::IO::SerialBufferEventArgs& args)
+{
+    // Decoded serial packets will show up here.
+    SerialMessage message(args.getBuffer().toString(), "", 255);
+    serialMessages.push_back(message);
+    
+    // ofLogNotice("onSerialBuffer") << "got serial buffer : " << message.message;
+}
+
+
+void ofApp::onSerialError(const ofx::IO::SerialBufferErrorEventArgs& args)
+{
+    // Errors and their corresponding buffer (if any) will show up here.
+    SerialMessage message(args.getBuffer().toString(),
+                          args.getException().displayText(),
+                          500);
+    
+    serialMessages.push_back(message);
+    ofLogNotice("onSerialError") << "got serial error : " << message.exception;
 }
 
 void ofApp::appendMessage( ofxOscMessage& message, osc::OutboundPacketStream& p )
