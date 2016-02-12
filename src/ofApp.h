@@ -4,7 +4,7 @@
 #include "ofxSyphon.h"
 #include "ofxSerial.h"
 #include "ofxOsc.h"
-#define PORT 6666
+#define PORT 66666
 #define NUM_MSG_STRINGS 20
 
 
@@ -53,6 +53,7 @@ public:
     int nbPix; // nombre de pixels
     int offset; // offset en nombre de lignes
     int size; // nombre de lignes ˆ prendre dans pix
+    int Xsize; // longueur de la ligne en X
     Teensy * dev;
     ofPixels pixelCrop;
     uint8_t brightness;

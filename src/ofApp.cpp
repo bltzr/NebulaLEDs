@@ -25,7 +25,7 @@ void ofApp::setup(){
     fbo.end();
  
     
-    fboTour.allocate(22, 22, GL_RGB);
+    fboTour.allocate(214, 1, GL_RGB);
     fboTour.begin();
     ofClear(0,0,0);
     fboTour.end();
@@ -54,6 +54,7 @@ void ofApp::setup(){
     ledLine[0].nbPix = 565;
     ledLine[0].offset = 0;
     ledLine[0].size = 13;
+    ledLine[0].Xsize = 45;
     
     ledLine[1].dev = &device;
     ledLine[1].src = &pixels;
@@ -61,6 +62,7 @@ void ofApp::setup(){
     ledLine[1].nbPix = 495;
     ledLine[1].offset = 13;
     ledLine[1].size = 11;
+    ledLine[1].Xsize = 45;
 
     ledLine[2].dev = &device2;
     ledLine[2].src = &pixels;
@@ -68,14 +70,15 @@ void ofApp::setup(){
     ledLine[2].nbPix = 565;
     ledLine[2].offset = 24;
     ledLine[2].size = 13;
-
+    ledLine[2].Xsize = 45;
+  
     ledLine[3].dev = &device2;
     ledLine[3].src = &pixTour;
     ledLine[3].address = "/2";
-    ledLine[3].nbPix = 459;
+    ledLine[3].nbPix = 214;
     ledLine[3].offset = 0;
-    ledLine[3].size = 22;
-    
+    ledLine[3].size = 1;
+    ledLine[3].Xsize = 214;
 
 }
 
@@ -154,7 +157,7 @@ void ofApp::sendLine(int i) {
 
     LedLine &line = ledLine[i];
     //ofPixels pixelCrop;
-    line.src->cropTo(line.pixelCrop, 0 , line.offset, 45, line.size);
+    line.src->cropTo(line.pixelCrop, 0 , line.offset, line.Xsize, line.size);
     
     ofBuffer imgAsBuffer;
     imgAsBuffer.clear();
@@ -189,7 +192,8 @@ void ofApp::sendLine(int i) {
 
 //--------------------------------------------------------------
 void ofApp::draw(){
-    
+  
+
     // Clear with alpha, so we can capture via syphon and composite elsewhere should we want.
     glClearColor(0.0, 0.0, 0.0, 0.0);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
