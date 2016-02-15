@@ -25,7 +25,7 @@ void ofApp::setup(){
     fbo.end();
  
     
-    fboTour.allocate(214, 1, GL_RGB);
+    fboTour.allocate(191, 1, GL_RGB);
     fboTour.begin();
     ofClear(0,0,0);
     fboTour.end();
@@ -75,10 +75,10 @@ void ofApp::setup(){
     ledLine[3].dev = &device2;
     ledLine[3].src = &pixTour;
     ledLine[3].address = "/2";
-    ledLine[3].nbPix = 214;
+    ledLine[3].nbPix = 191;
     ledLine[3].offset = 0;
     ledLine[3].size = 1;
-    ledLine[3].Xsize = 214;
+    ledLine[3].Xsize = 191;
 
 }
 
