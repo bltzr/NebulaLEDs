@@ -16,7 +16,7 @@ void ofApp::setup(){
 
     
     // display
-    ofSetFrameRate(60); // if vertical sync is off, we can go a bit fast... this caps the framerate at 60fps.
+    ofSetFrameRate(30); // if vertical sync is off, we can go a bit fast... this caps the framerate at 60fps.
     
     
     fbo.allocate(45, 45, GL_RGB);
@@ -35,13 +35,15 @@ void ofApp::setup(){
     
     std::vector<ofx::IO::SerialDeviceInfo> devicesInfo = ofx::IO::SerialDeviceUtils::listDevices();
     
-    ofLogNotice("ofApp::setup") << "Connected Devices: ";
+    //ofLogNotice("ofApp::setup") << "Connected Devices: ";
     
     device.name = "/dev/cu.usbmodem1369841";
     device2.name = "/dev/cu.usbmodem1455771";
+    device3.name = "/dev/cu.usbmodem1458911";
     
     device.setup();
     device2.setup();
+    device3.setup();
     
     //ligne 1 : Fond - T1 - /l1 - nPixels = 565 - x = 0 - h = 13
     //ligne 2 : Fond - T1 - /l2 - nPixels = 495 - x = 13 - h = 11
@@ -72,9 +74,9 @@ void ofApp::setup(){
     ledLine[2].size = 13;
     ledLine[2].Xsize = 45;
   
-    ledLine[3].dev = &device2;
+    ledLine[3].dev = &device3;
     ledLine[3].src = &pixTour;
-    ledLine[3].address = "/2";
+    ledLine[3].address = "/1";
     ledLine[3].nbPix = 191;
     ledLine[3].offset = 0;
     ledLine[3].size = 1;
@@ -104,17 +106,27 @@ void ofApp::update(){
         receiver.getNextMessage(m);
         
         if(m.getAddress() == "/b"){
-            ofLog() << "b" << m.getArgAsInt32(0);
+            //ofLog() << "b" << m.getArgAsInt32(0);
             for (int i=0; i<3; i++){
                 setBrightness(i, m.getArgAsInt32(0));
             }
         }
         else if(m.getAddress() == "/t"){
-            ofLog() << "t" << m.getArgAsInt32(0);
+            //ofLog() << "t" << m.getArgAsInt32(0);
             setBrightness(3, m.getArgAsInt32(0));
         }
+        else if(m.getAddress() == "/d"){
+            for (int i=0; i<3; i++){
+                setDither(i, m.getArgAsInt32(0));
+            }
+            //ofLog() << "d" << m.getArgAsInt32(0);
+        }
+        else if(m.getAddress() == "/dt"){
+            setDither(3, m.getArgAsInt32(0));
+            //ofLog() << "d" << m.getArgAsInt32(0);
+        }
     }
-    
+  
     for (int i=0; i<4; i++) {
     sendLine(i);
     }
@@ -150,6 +162,37 @@ void ofApp::setBrightness(int i, int brightness) {
             line.dev->setup();
         }
 
+}
+
+void ofApp::setDither(int i, int dither) {
+  
+        // check for waiting messages
+        
+        LedLine line = ledLine[i];
+        ofxOscMessage n;
+        n.setAddress("/b");
+        n.addIntArg(dither);
+        
+        // this code come from ofxOscSender::sendMessage in ofxOscSender.cpp
+        static const int OUTPUT_BUFFER_SIZE = 16384;
+        char buffer[OUTPUT_BUFFER_SIZE];
+        osc::OutboundPacketStream p( buffer, OUTPUT_BUFFER_SIZE );
+        
+        // serialise the message
+        
+        p << osc::BeginBundleImmediate;
+        appendMessage( n, p );
+        p << osc::EndBundle;
+        
+        ofx::IO::ByteBuffer toEncode(p.Data(),p.Size());
+        
+        try {
+          line.dev->dev.send(toEncode);
+        } catch ( serial::SerialException e) {
+          ofLogError("sendLine") << "failed to send data : " << e.what();
+          line.dev->setup();
+        }
+  
 }
 
 //--------------------------------------------------------------
