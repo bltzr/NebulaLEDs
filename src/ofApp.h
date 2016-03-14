@@ -57,6 +57,7 @@ public:
     Teensy * dev;
     ofPixels pixelCrop;
     uint8_t brightness;
+    uint8_t dither;
     
 };
 
@@ -77,9 +78,10 @@ class ofApp : public ofBaseApp {
         void onSerialBuffer(const ofx::IO::SerialBufferEventArgs& args);
         void onSerialError(const ofx::IO::SerialBufferErrorEventArgs& args);
         void sendLine(int i);
-    void setBrightness(int line, int brightness);
-    
-        Teensy device, device2;
+        void setBrightness(int line, int brightness);
+        void setDither(int line, int dither);
+  
+        Teensy device, device2, device3;
     
         std::vector<SerialMessage> serialMessages;
     
