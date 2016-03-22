@@ -16,7 +16,7 @@ void ofApp::setup(){
 
     
     // display
-    ofSetFrameRate(30); // if vertical sync is off, we can go a bit fast... this caps the framerate at 60fps.
+    ofSetFrameRate(60); // if vertical sync is off, we can go a bit fast... this caps the framerate at 60fps.
     
     
     fbo.allocate(45, 45, GL_RGB);
@@ -210,7 +210,7 @@ void ofApp::sendLine(int i) {
     m.setAddress(line.address);
     m.addBlobArg(imgAsBuffer);
     
-    // this code come from ofxOscSender::sendMessage in ofxOscSender.cpp
+    // this code comes from ofxOscSender::sendMessage in ofxOscSender.cpp
     static const int OUTPUT_BUFFER_SIZE = 16384;
     char buffer[OUTPUT_BUFFER_SIZE];
     osc::OutboundPacketStream p( buffer, OUTPUT_BUFFER_SIZE );
