@@ -14,8 +14,8 @@
 PacketSerial_<SLIP, SLIP::END, 8192> serial;
 
 // How many leds in your strip?
-#define NUM_LEDS 570 
-#define NUM_LEDS2 505
+#define NUM_LEDS 320 
+#define NUM_LEDS2 320
 
 // For led chips like Neopixels, which have a data line, ground, and power, you just
 // need to define DATA_PIN.  For led chipsets that are SPI based (four wires - data, clock,

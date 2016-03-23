@@ -3,13 +3,13 @@
 		"fileversion" : 1,
 		"appversion" : 		{
 			"major" : 7,
-			"minor" : 1,
-			"revision" : 0,
+			"minor" : 2,
+			"revision" : 1,
 			"architecture" : "x86",
 			"modernui" : 1
 		}
 ,
-		"rect" : [ 281.0, 113.0, 869.0, 508.0 ],
+		"rect" : [ 281.0, 113.0, 871.0, 495.0 ],
 		"bglocked" : 0,
 		"openinpresentation" : 0,
 		"default_fontsize" : 12.0,
@@ -45,7 +45,6 @@
 					"outlettype" : [ "" ],
 					"parameter_enable" : 1,
 					"patching_rect" : [ 454.0, 77.310699, 20.0, 243.471588 ],
-					"presentation_rect" : [ 454.0, 77.432465, 0.0, 0.0 ],
 					"saved_attribute_attributes" : 					{
 						"valueof" : 						{
 							"parameter_longname" : "slider[4]",
@@ -71,7 +70,6 @@
 					"outlettype" : [ "" ],
 					"parameter_enable" : 1,
 					"patching_rect" : [ 28.799988, 91.432465, 20.0, 243.471588 ],
-					"presentation_rect" : [ 9.0, 90.432465, 0.0, 0.0 ],
 					"saved_attribute_attributes" : 					{
 						"valueof" : 						{
 							"parameter_longname" : "slider[3]",
@@ -125,8 +123,8 @@
 						"fileversion" : 1,
 						"appversion" : 						{
 							"major" : 7,
-							"minor" : 1,
-							"revision" : 0,
+							"minor" : 2,
+							"revision" : 1,
 							"architecture" : "x86",
 							"modernui" : 1
 						}
@@ -759,7 +757,7 @@
 					"maxclass" : "comment",
 					"numinlets" : 1,
 					"numoutlets" : 0,
-					"patching_rect" : [ 350.0, 364.0, 77.0, 87.0 ],
+					"patching_rect" : [ 418.0, 360.871582, 77.0, 87.0 ],
 					"style" : "",
 					"text" : "not printing \nwill cause \nthe comm.\nto fail\n(over 322 LEDs)"
 				}
@@ -773,7 +771,7 @@
 					"numoutlets" : 1,
 					"outlettype" : [ "int" ],
 					"parameter_enable" : 1,
-					"patching_rect" : [ 290.0, 364.0, 24.0, 24.0 ],
+					"patching_rect" : [ 358.0, 360.871582, 24.0, 24.0 ],
 					"saved_attribute_attributes" : 					{
 						"valueof" : 						{
 							"parameter_longname" : "toggle[2]",
@@ -796,7 +794,7 @@
 					"numinlets" : 2,
 					"numoutlets" : 1,
 					"outlettype" : [ "" ],
-					"patching_rect" : [ 290.0, 405.0, 54.0, 22.0 ],
+					"patching_rect" : [ 358.0, 401.871582, 54.0, 22.0 ],
 					"style" : "",
 					"text" : "gate 1 1"
 				}
@@ -809,7 +807,7 @@
 					"maxclass" : "newobj",
 					"numinlets" : 1,
 					"numoutlets" : 0,
-					"patching_rect" : [ 290.0, 435.0, 38.0, 22.0 ],
+					"patching_rect" : [ 358.0, 431.871582, 38.0, 22.0 ],
 					"style" : "",
 					"text" : "print"
 				}
@@ -825,8 +823,8 @@
 						"fileversion" : 1,
 						"appversion" : 						{
 							"major" : 7,
-							"minor" : 1,
-							"revision" : 0,
+							"minor" : 2,
+							"revision" : 1,
 							"architecture" : "x86",
 							"modernui" : 1
 						}
@@ -940,7 +938,7 @@
  ]
 					}
 ,
-					"patching_rect" : [ 202.0, 435.0, 52.0, 22.0 ],
+					"patching_rect" : [ 292.5, 431.871582, 52.0, 22.0 ],
 					"saved_object_attributes" : 					{
 						"description" : "",
 						"digest" : "",
@@ -991,8 +989,8 @@
 						"fileversion" : 1,
 						"appversion" : 						{
 							"major" : 7,
-							"minor" : 1,
-							"revision" : 0,
+							"minor" : 2,
+							"revision" : 1,
 							"architecture" : "x86",
 							"modernui" : 1
 						}
@@ -1576,9 +1574,9 @@
 					"numinlets" : 1,
 					"numoutlets" : 2,
 					"outlettype" : [ "int", "" ],
-					"patching_rect" : [ 121.0, 401.5, 100.0, 22.0 ],
+					"patching_rect" : [ 119.5, 401.5, 192.0, 22.0 ],
 					"style" : "",
-					"text" : "serial h 921600"
+					"text" : "serial usbmodem1366241 921600"
 				}
 
 			}
@@ -1593,13 +1591,13 @@
 						"fileversion" : 1,
 						"appversion" : 						{
 							"major" : 7,
-							"minor" : 1,
-							"revision" : 0,
+							"minor" : 2,
+							"revision" : 1,
 							"architecture" : "x86",
 							"modernui" : 1
 						}
 ,
-						"rect" : [ 176.0, 212.0, 517.0, 736.0 ],
+						"rect" : [ 908.0, 158.0, 517.0, 736.0 ],
 						"bglocked" : 0,
 						"openinpresentation" : 0,
 						"default_fontsize" : 12.0,
@@ -1626,6 +1624,7 @@
 						"tags" : "",
 						"style" : "",
 						"subpatcher_template" : "",
+						"visible" : 1,
 						"boxes" : [ 							{
 								"box" : 								{
 									"id" : "obj-7",
@@ -1649,7 +1648,6 @@
 									"numoutlets" : 1,
 									"outlettype" : [ "" ],
 									"patching_rect" : [ 209.0, 362.547974, 30.0, 30.0 ],
-									"presentation_rect" : [ 408.0, 405.047974, 0.0, 0.0 ],
 									"style" : ""
 								}
 
@@ -1662,7 +1660,7 @@
 									"numinlets" : 2,
 									"numoutlets" : 1,
 									"outlettype" : [ "" ],
-									"patching_rect" : [ 288.0, 546.792603, 174.0, 35.0 ],
+									"patching_rect" : [ 288.0, 546.792603, 175.0, 35.0 ],
 									"style" : "",
 									"text" : "/1 OSCBlob 15 34 34 34 34 34 34 34 34 34 34 34 34 34 34 34"
 								}
@@ -1691,7 +1689,6 @@
 									"numoutlets" : 1,
 									"outlettype" : [ "" ],
 									"patching_rect" : [ 13.0, 262.5, 30.0, 30.0 ],
-									"presentation_rect" : [ 13.0, 263.047974, 0.0, 0.0 ],
 									"style" : ""
 								}
 
@@ -3205,7 +3202,7 @@
 					"destination" : [ "obj-11", 0 ],
 					"disabled" : 0,
 					"hidden" : 0,
-					"midpoints" : [ 216.5, 389.185791, 130.5, 389.185791 ],
+					"midpoints" : [ 216.5, 389.185791, 129.0, 389.185791 ],
 					"source" : [ "obj-42", 0 ]
 				}
 
@@ -3224,7 +3221,7 @@
 					"destination" : [ "obj-11", 0 ],
 					"disabled" : 0,
 					"hidden" : 0,
-					"midpoints" : [ 130.5, 391.685791, 130.5, 391.685791 ],
+					"midpoints" : [ 130.5, 391.685791, 129.0, 391.685791 ],
 					"source" : [ "obj-48", 1 ]
 				}
 
@@ -3234,7 +3231,7 @@
 					"destination" : [ "obj-13", 1 ],
 					"disabled" : 0,
 					"hidden" : 0,
-					"midpoints" : [ 130.5, 393.435791, 334.5, 393.435791 ],
+					"midpoints" : [ 130.5, 393.435791, 402.5, 393.435791 ],
 					"source" : [ "obj-48", 1 ]
 				}
 
@@ -3271,7 +3268,7 @@
 					"destination" : [ "obj-11", 0 ],
 					"disabled" : 0,
 					"hidden" : 0,
-					"midpoints" : [ 155.5, 389.185791, 130.5, 389.185791 ],
+					"midpoints" : [ 155.5, 389.185791, 129.0, 389.185791 ],
 					"source" : [ "obj-6", 0 ]
 				}
 
@@ -3296,21 +3293,21 @@
 			}
  ],
 		"parameters" : 		{
+			"obj-1" : [ "slider[3]", "slider", 0 ],
+			"obj-49" : [ "toggle[1]", "toggle[1]", 0 ],
 			"obj-27" : [ "number[2]", "number[1]", 0 ],
-			"obj-14" : [ "number[3]", "number[3]", 0 ],
+			"obj-4" : [ "slider[4]", "slider", 0 ],
+			"obj-21" : [ "slider[2]", "slider", 0 ],
 			"obj-26" : [ "slider[1]", "slider", 0 ],
 			"obj-22" : [ "swatch[1]", "swatch", 0 ],
+			"obj-10" : [ "toggle[3]", "toggle[1]", 0 ],
+			"obj-17" : [ "toggle[2]", "toggle[2]", 0 ],
+			"obj-14" : [ "number[3]", "number[3]", 0 ],
+			"obj-30" : [ "multislider[1]", "multislider", 0 ],
 			"obj-25" : [ "swatch", "swatch", 0 ],
 			"obj-9" : [ "multislider", "multislider", 0 ],
-			"obj-49" : [ "toggle[1]", "toggle[1]", 0 ],
 			"obj-24" : [ "slider", "slider", 0 ],
-			"obj-19" : [ "number[1]", "number[1]", 0 ],
-			"obj-21" : [ "slider[2]", "slider", 0 ],
-			"obj-10" : [ "toggle[3]", "toggle[1]", 0 ],
-			"obj-1" : [ "slider[3]", "slider", 0 ],
-			"obj-4" : [ "slider[4]", "slider", 0 ],
-			"obj-17" : [ "toggle[2]", "toggle[2]", 0 ],
-			"obj-30" : [ "multislider[1]", "multislider", 0 ]
+			"obj-19" : [ "number[1]", "number[1]", 0 ]
 		}
 ,
 		"dependency_cache" : [ 			{
