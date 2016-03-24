@@ -25,8 +25,8 @@ PacketSerial_<SLIP, SLIP::END, 8192> serial;
 #define DATA_PIN2 7
 #define CLOCK_PIN2 14
 
-APA102Controller_WithBrightness<DATA_PIN, CLOCK_PIN, BGR, DATA_RATE_MHZ(4)> ledController;
-APA102Controller_WithBrightness<DATA_PIN2, CLOCK_PIN2, BGR, DATA_RATE_MHZ(4)> ledController2;
+APA102Controller_WithBrightness<DATA_PIN, CLOCK_PIN, BGR, DATA_RATE_MHZ(6)> ledController;
+APA102Controller_WithBrightness<DATA_PIN2, CLOCK_PIN2, BGR, DATA_RATE_MHZ(6)> ledController2;
 CRGB leds[NUM_LEDS], leds2[NUM_LEDS2];
 char brightness = 255;
 int i = 0;
