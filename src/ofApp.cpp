@@ -39,7 +39,7 @@ void ofApp::setup(){
     
     device.name = "/dev/cu.usbmodem1369841";
     device2.name = "/dev/cu.usbmodem1455771";
-    device3.name = "/dev/cu.usbmodem1366241";
+    device3.name = "/dev/cu.usbmodem1383111";
     device4.name = "/dev/cu.usbmodem1458911";
     
     
