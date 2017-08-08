@@ -14,8 +14,8 @@
 PacketSerial_<SLIP, SLIP::END, 8192> serial;
 
 // How many leds in your strip?
-#define NUM_LEDS 570 
-#define NUM_LEDS2 505
+#define NUM_LEDS 320 
+#define NUM_LEDS2 320
 
 // For led chips like Neopixels, which have a data line, ground, and power, you just
 // need to define DATA_PIN.  For led chipsets that are SPI based (four wires - data, clock,
@@ -25,8 +25,8 @@ PacketSerial_<SLIP, SLIP::END, 8192> serial;
 #define DATA_PIN2 7
 #define CLOCK_PIN2 14
 
-APA102Controller_WithBrightness<DATA_PIN, CLOCK_PIN, BGR, DATA_RATE_KHZ(500)> ledController;
-APA102Controller_WithBrightness<DATA_PIN2, CLOCK_PIN2, BGR, DATA_RATE_KHZ(500)> ledController2;
+APA102Controller_WithBrightness<DATA_PIN, CLOCK_PIN, BGR, DATA_RATE_MHZ(6)> ledController;
+APA102Controller_WithBrightness<DATA_PIN2, CLOCK_PIN2, BGR, DATA_RATE_MHZ(6)> ledController2;
 CRGB leds[NUM_LEDS], leds2[NUM_LEDS2];
 char brightness = 255;
 int i = 0;

@@ -81,11 +81,11 @@ class ofApp : public ofBaseApp {
         void setBrightness(int line, int brightness);
         void setDither(int line, int dither);
   
-        Teensy device, device2, device3;
+        Teensy device, device2, device3, device4;
     
         std::vector<SerialMessage> serialMessages;
     
-        LedLine ledLine[4];
+        LedLine ledLine[7];
     
         int current_msg_string;
         string msg_strings[NUM_MSG_STRINGS];
