@@ -94,6 +94,7 @@ class ofApp : public ofBaseApp {
         void onSerialBuffer(const ofx::IO::SerialBufferEventArgs& args);
         void onSerialError(const ofx::IO::SerialBufferErrorEventArgs& args);
         void sendLine(int i);
+        void sendDMX();
         void setBrightness(int line, int brightness);
         void setDither(int line, int dither);
   

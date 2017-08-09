@@ -125,8 +125,15 @@ void ofApp::update(){
         // get the next message
         ofxOscMessage m;
         receiver.getNextMessage(m);
+      
+      if(m.getAddress() == "/play"){
+        //ofLog() << "b" << m.getArgAsInt32(0);
+        if(m.getArgAsBool(0)){trame.play(); playing = 1;}
+        else if(!m.getArgAsBool(0)){trame.stop(); playing = 0;}
+      }
+      
       /*
-        if(m.getAddress() == "/b"){
+        else if(m.getAddress() == "/b"){
             //ofLog() << "b" << m.getArgAsInt32(0);
             for (int i=0; i<6; i++){
                 setBrightness(i, m.getArgAsInt32(0));
@@ -150,12 +157,6 @@ void ofApp::update(){
             //ofLog() << "d" << m.getArgAsInt32(0);
         }
      
-        else  */ if(m.getAddress() == "/play"){
-          //ofLog() << "b" << m.getArgAsInt32(0);
-          if(m.getArgAsBool(0)){trame.play(); playing = 1;}
-          else if(!m.getArgAsBool(0)){trame.stop(); playing = 0;}
-        }
-     /*
         else if(m.getAddress() == "/image"){
           //    ofLog() << "nArgs" << m.getNumArgs();
           //NetBuffer.clear();
@@ -176,9 +177,7 @@ void ofApp::update(){
         // get part of the image for the PWMs
         //ofPixels PWMPix;
         pixels.cropTo(PWMPix, 0, 42, 22, 1);
-      
-        //TODO: send that via SLIP to Teensy 4 with /DMX address
-
+        sendDMX();
         
         // get part of the image for the Brightnesses
         //ofPixels BrightPix;
@@ -275,7 +274,7 @@ void ofApp::setBrightness(int i, int brightness) {
         char buffer[OUTPUT_BUFFER_SIZE];
         osc::OutboundPacketStream p( buffer, OUTPUT_BUFFER_SIZE );
         
-        // serialise the message
+        // serialize the message
         
         p << osc::BeginBundleImmediate;
         appendMessage( n, p );
@@ -320,6 +319,40 @@ void ofApp::setDither(int i, int dither) {
           ofLogError("sendLine") << "failed to send data : " << e.what();
           line.dev->setup();
         }
+  
+}
+
+//--------------------------------------------------------------
+void ofApp::sendDMX() {
+ 
+    ofBuffer imgAsBuffer;
+    imgAsBuffer.clear();
+    imgAsBuffer.append((const char*)PWMPix.getData(),64);
+  
+    ofxOscMessage m;
+    m.setAddress("/DMX");
+    m.addBlobArg(imgAsBuffer);
+  
+    // this code comes from ofxOscSender::sendMessage in ofxOscSender.cpp
+    static const int OUTPUT_BUFFER_SIZE = 16384;
+    char buffer[OUTPUT_BUFFER_SIZE];
+    osc::OutboundPacketStream p( buffer, OUTPUT_BUFFER_SIZE );
+  
+    // serialise the message
+  
+    p << osc::BeginBundleImmediate;
+    appendMessage( m, p );
+    p << osc::EndBundle;
+  
+    ofx::IO::ByteBuffer toEncode(p.Data(),p.Size());
+  
+    try {
+      device4.dev.send(toEncode);
+    } catch ( serial::SerialException e) {
+      ofLogError("sendLine") << "failed to send data : " << e.what();
+      device4.setup();
+    }
+  
   
 }
 
