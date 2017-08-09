@@ -7,29 +7,33 @@ void ofApp::setup(){
     ofSetWindowTitle("NebulaLEDs");
 
     receiver.setup(PORT);
-    
-    mClient.setup();
-    tClient.setup();
-    
-    mClient.set("Fond","Max");
-    tClient.set("Tour","Max");
-
+    ofLog() << "Opened OSC Receiver";
+  
     
     // display
+    ofBackground(0,0,0);
+    ofSetVerticalSync(true);
     ofSetFrameRate(60); // if vertical sync is off, we can go a bit fast... this caps the framerate at 60fps.
-    
-    
-    fbo.allocate(45, 45, GL_RGB);
-    fbo.begin();
-    ofClear(0,0,0);
-    fbo.end();
- 
-    
-    fboTour.allocate(191, 1, GL_RGB);
-    fboTour.begin();
-    ofClear(0,0,0);
-    fboTour.end();
-    
+  
+    trame.setPixelFormat(OF_PIXELS_RGB);
+  
+    //trame.load("bright.mov");
+    trame.load("/data/Nebula.mov");
+    ofLog() << "Loaded Mov";
+    trame.setLoopState(OF_LOOP_NORMAL);
+  
+    if (send){
+      // open an outgoing connection to HOST:PORT
+      sender.setup(HOST, PORT);
+      ofLog() << "Opened OSC Sender";
+    }
+  
+  
+  
+    if(playing){
+      trame.play();
+      }
+  
     
     // setup Serial
     
@@ -104,62 +108,157 @@ void ofApp::setup(){
     ledLine[5].Xsize = 45;
     
     ledLine[6].dev = &device4;
-    ledLine[6].src = &pixTour;
+    ledLine[6].src = &pixels;
     ledLine[6].address = "/1";
     ledLine[6].nbPix = 191;
-    ledLine[6].offset = 0;
-    ledLine[6].size = 1;
-    ledLine[6].Xsize = 191;
+    ledLine[6].offset = 37;
+    ledLine[6].size = 5;
+    ledLine[6].Xsize = 45;
 
 }
 
 //--------------------------------------------------------------
 void ofApp::update(){
 
-    
-    fbo.begin();
-    mClient.draw(0, 0);
-    fbo.end();
-    
-    fbo.readToPixels(pixels);
-    
-    fboTour.begin();
-    tClient.draw(0, 0);
-    fboTour.end();
-    
-    fboTour.readToPixels(pixTour);
-    
+
     while(receiver.hasWaitingMessages()){
         // get the next message
         ofxOscMessage m;
         receiver.getNextMessage(m);
-        
+      /*
         if(m.getAddress() == "/b"){
             //ofLog() << "b" << m.getArgAsInt32(0);
             for (int i=0; i<6; i++){
                 setBrightness(i, m.getArgAsInt32(0));
             }
         }
+      
         else if(m.getAddress() == "/t"){
             //ofLog() << "t" << m.getArgAsInt32(0);
             setBrightness(6, m.getArgAsInt32(0));
         }
+      
         else if(m.getAddress() == "/d"){
             for (int i=0; i<6; i++){
                 setDither(i, m.getArgAsInt32(0));
             }
             //ofLog() << "d" << m.getArgAsInt32(0);
         }
+      
         else if(m.getAddress() == "/dt"){
             setDither(6, m.getArgAsInt32(0));
             //ofLog() << "d" << m.getArgAsInt32(0);
         }
+     
+        else  */ if(m.getAddress() == "/play"){
+          //ofLog() << "b" << m.getArgAsInt32(0);
+          if(m.getArgAsBool(0)){trame.play(); playing = 1;}
+          else if(!m.getArgAsBool(0)){trame.stop(); playing = 0;}
+        }
+     /*
+        else if(m.getAddress() == "/image"){
+          //    ofLog() << "nArgs" << m.getNumArgs();
+          //NetBuffer.clear();
+          NetBuffer = m.getArgAsBlob(0);
+        }
+     */
     }
   
+      trame.update();
+      
+      // get part of the image for the LEDs
+      
+      if(playing){
+        pixels = trame.getPixels();
+        //ofLog() << "pixel format: " << pixels.getPixelFormat();
+        //LEDs = pixels.getData();
+        
+        // get part of the image for the PWMs
+        //ofPixels PWMPix;
+        pixels.cropTo(PWMPix, 0, 42, 22, 1);
+      
+        //TODO: send that via SLIP to Teensy 4 with /DMX address
+
+        
+        // get part of the image for the Brightnesses
+        //ofPixels BrightPix;
+        pixels.cropTo(BrightPix, 41, 42, 4, 1);
+        Brights = BrightPix.getData();
+
+ 
+        // /d - Fond dither
+        for (int i=0; i<6; i++){
+          setDither(i, (int)Brights[0]);
+        }
+        //ofLog() << "d" <<  (int)Brights[0];
+        
+        // /b - Fond brightness
+        for (int i=0; i<6; i++){
+          setBrightness(i, (int)Brights[3]/8);
+        }
+        //ofLog() << "b" << (int)Brights[3]/8;
+        
+        // /dt - Tour dither
+        setDither(6, Brights[6]);
+        //ofLog() << "dt" <<  (int)Brights[6];
+        
+        // /bt - Tour dither
+        setBrightness(6, (int)Brights[9]/8);
+        //ofLog() << "bt" << (int)Brights[9]/8;
+   
+        
+     /*
+        if (send){
+          
+          imgAsBuffer.clear();
+          imgAsBuffer.append((const char*)pixels.getData(),pixels.size());
+
+          ofxOscMessage m;
+          m.setAddress("/image");
+          m.addBlobArg(imgAsBuffer);
+          sender.sendMessage(m);
+          
+          
+          PWMBuffer.clear();
+          PWMBuffer.append((const char*)PWMPix.getData(), PWMPix.size());
+
+          ofxOscMessage n;
+          n.setAddress("/PWMs");
+          n.addBlobArg(PWMBuffer);
+          sender.sendMessage(n);
+          
+
+          BrightBuffer.clear();
+          BrightBuffer.append((const char*)BrightPix.getData(), BrightPix.size());
+          
+          ofxOscMessage o;
+          o.setAddress("/brights");
+          o.addBlobArg(PWMBuffer);
+          sender.sendMessage(o);
+
+        }
+*/
+      }
+      
+      else{
+        //LEDs = (unsigned char*) NetBuffer.getData();
+        // TODO: fill pixels with the Network Data
+      }
+      //ofLog()<<brightness;
+      
+      
+      
+      
+      
+      
+      
+      
+    //}
+
     for (int i=0; i<7; i++) {
     sendLine(i);
     }
-    
+
 }
 
 void ofApp::setBrightness(int i, int brightness) {
@@ -271,10 +370,10 @@ void ofApp::draw(){
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     
-    
-    fbo.draw(20, 20, 450, 450);
-    fboTour.draw(20, 500, 220, 220);
-    
+  //trame.play();
+    trame.draw(20, 20, 450, 450);
+
+    /*
     for (int i=0; i<6; i++) {
         ofImage img;
         img.setFromPixels(ledLine[i].pixelCrop);
@@ -284,7 +383,11 @@ void ofApp::draw(){
     ofImage img;
     img.setFromPixels(ledLine[6].pixelCrop);
     img.draw(500, 600, 450, ledLine[6].size*30);
-    
+    */
+    ofImage img;
+    img.setFromPixels(BrightPix);
+    img.draw(500, 600, 450, 50);
+  
 
 
 

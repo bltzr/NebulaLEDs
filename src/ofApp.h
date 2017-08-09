@@ -1,10 +1,12 @@
 #pragma once
 
 #include "ofMain.h"
-#include "ofxSyphon.h"
+//#include "ofxSyphon.h"
 #include "ofxSerial.h"
 #include "ofxOsc.h"
-#define PORT 66666
+#define HOST "Nebula.local"
+#define PORT 12345
+#define PORTIN 98765
 #define NUM_MSG_STRINGS 20
 
 
@@ -67,14 +69,28 @@ class ofApp : public ofBaseApp {
 		void setup();
 		void update();
 		void draw();
+   // void exit();
     
-        ofFbo fbo, fboTour;
-        ofPixels pixels, pixTour;
+        //ofFbo fbo, fboTour;
+        ofPixels pixels, pixTour, PWMPix, BrightPix;
     
-        ofxSyphonClient mClient, tClient;
-    
+        //ofxSyphonClient mClient, tClient;
+  
+        ofVideoPlayer trame;
+        ofxOscSender sender;
         ofxOscReceiver receiver;
-    
+  
+        ofBuffer imgAsBuffer, NetBuffer, PWMBuffer, BrightBuffer;
+  
+        ofImage img, PWMimg, Brightimg;
+        unsigned char * Brights;
+  
+        int playing = 1;
+  
+        string host = "Nebula.local";
+        int width = 20, height = 14, pwm = 0;
+        bool send = 0;
+  
         void onSerialBuffer(const ofx::IO::SerialBufferEventArgs& args);
         void onSerialError(const ofx::IO::SerialBufferErrorEventArgs& args);
         void sendLine(int i);
