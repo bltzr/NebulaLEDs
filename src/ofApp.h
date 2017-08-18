@@ -83,13 +83,13 @@ class ofApp : public ofBaseApp {
         ofBuffer imgAsBuffer, NetBuffer, PWMBuffer, BrightBuffer;
   
         ofImage img, PWMimg, Brightimg;
-        unsigned char * Brights;
+        unsigned char * Brights, * DMX;
   
         int playing = 1;
   
         string host = "Nebula.local";
         int width = 20, height = 14, pwm = 0;
-        bool send = 0;
+        bool send = 1;
   
         void onSerialBuffer(const ofx::IO::SerialBufferEventArgs& args);
         void onSerialError(const ofx::IO::SerialBufferErrorEventArgs& args);

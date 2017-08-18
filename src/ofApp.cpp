@@ -177,6 +177,9 @@ void ofApp::update(){
         // get part of the image for the PWMs
         //ofPixels PWMPix;
         pixels.cropTo(PWMPix, 0, 42, 22, 1);
+        DMX = PWMPix.getData();
+        printf ("%s",DMX);
+        //ofLog() << "DMX: " << DMX << "_";
         sendDMX();
         
         // get part of the image for the Brightnesses
@@ -206,7 +209,7 @@ void ofApp::update(){
         //ofLog() << "bt" << (int)Brights[9]/8;
    
         
-     /*
+     
         if (send){
           
           imgAsBuffer.clear();
@@ -236,7 +239,7 @@ void ofApp::update(){
           sender.sendMessage(o);
 
         }
-*/
+
       }
       
       else{
@@ -245,12 +248,7 @@ void ofApp::update(){
       }
       //ofLog()<<brightness;
       
-      
-      
-      
-      
-      
-      
+
       
     //}
 
@@ -328,6 +326,8 @@ void ofApp::sendDMX() {
     ofBuffer imgAsBuffer;
     imgAsBuffer.clear();
     imgAsBuffer.append((const char*)PWMPix.getData(),64);
+  
+    //ofLog()<<(const char*)PWMPix.getData();
   
     ofxOscMessage m;
     m.setAddress("/DMX");

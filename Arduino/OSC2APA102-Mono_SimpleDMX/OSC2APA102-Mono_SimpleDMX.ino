@@ -1,3 +1,5 @@
+#include <DmxSimple.h>
+
 /*
   SLIP-OSC.ino
 
@@ -9,8 +11,6 @@
 */
 #include <OSCBundle.h>
 #include <PacketSerial.h>
-#include <rdm.h>
-#include <TeensyDmx.h>
 #include "APA102_WithGlobalBrightness.h"
 
 PacketSerial_<SLIP, SLIP::END, 8192> serial;
@@ -18,7 +18,6 @@ PacketSerial_<SLIP, SLIP::END, 8192> serial;
 // How many leds in your strip?
 #define NUM_LEDS 196
 
-#define DMX_REDE 2
 
 // For led chips like Neopixels, which have a data line, ground, and power, you just
 // need to define DATA_PIN.  For led chipsets that are SPI based (four wires - data, clock,
@@ -31,8 +30,6 @@ APA102Controller_WithBrightness<DATA_PIN, CLOCK_PIN, BGR, DATA_RATE_MHZ(4)> ledC
 CRGB leds[NUM_LEDS];
 char brightness = 255;
 int i = 0;
-
-TeensyDmx Dmx(Serial1, DMX_REDE);
 
 void LEDcontrol(OSCMessage &msg)
 {
@@ -64,12 +61,23 @@ void setDMX(OSCMessage &msg)
 if (msg.isBlob(0))
   {
     int length = msg.getDataLength(0);
-    uint8_t values[length];
-    msg.getBlob(0, (uint8_t *)values, length);
-    Dmx.setChannels(0, values, length);
+    uint8_t v[length];
+    for (int c = 1; c <= length; c++) {
+        int value = msg.getBlob(c-1, (unsigned char *)v, 1);
+        DmxSimple.write(c, value); 
+         
+        Serial.print("Channel: ");
+        Serial.println(c, DEC);
+      
+        Serial.print("Value: ");
+        Serial.println(value, DEC); 
+        Serial.println("");
+    } 
+    Serial.print("New Frame");
+    Serial.println(""); 
+    Serial.println("");   
   }
 }
-
 void onPacket(const uint8_t* buffer, size_t size) {
   OSCBundle bundleIN;
 
@@ -80,7 +88,6 @@ void onPacket(const uint8_t* buffer, size_t size) {
   if (!bundleIN.hasError()) {
     bundleIN.dispatch("/1", LEDcontrol);
     bundleIN.dispatch("/b", setGlobalBrightness);
-    bundleIN.dispatch("/DMX", setDMX);
   }
 }
 
@@ -92,19 +99,18 @@ void setup() {
   
   ledController.setAPA102Brightness(1);
 
-  // Now for DMX
+  DmxSimple.usePin(3);
+  DmxSimple.maxChannel(66);
 
-  Dmx.setMode(TeensyDmx::DMX_OUT);
   
   //FastLED.show(CRGB::White);
   //delay(500);
-  FastLED.show(CRGB::Black);
+  //FastLED.show(CRGB::Black);
 }
 
 void loop() {
   serial.update();
   FastLED.show();
-  Dmx.loop();
 }
 
 

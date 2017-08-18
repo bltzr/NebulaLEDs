@@ -93,9 +93,9 @@ void setup() {
   ledController.setAPA102Brightness(1);
   ledController2.setAPA102Brightness(1);
   
-  FastLED.show(CRGB::White);
-  delay(500);
-  FastLED.show(CRGB::Black);
+  //FastLED.show(CRGB::White);
+  //delay(500);
+  //FastLED.show(CRGB::Black);
 }
 
 void loop() {
