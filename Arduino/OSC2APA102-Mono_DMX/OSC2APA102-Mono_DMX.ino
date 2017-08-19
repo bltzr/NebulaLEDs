@@ -18,6 +18,9 @@ PacketSerial_<SLIP, SLIP::END, 8192> serial;
 // How many leds in your strip?
 #define NUM_LEDS 196
 
+// How many DMX channels at Max?
+#define NUM_DMX 64
+
 #define DMX_REDE 2
 
 // For led chips like Neopixels, which have a data line, ground, and power, you just
@@ -34,6 +37,7 @@ int i = 0;
 
 TeensyDmx Dmx(Serial1, DMX_REDE);
 
+
 void LEDcontrol(OSCMessage &msg)
 {
   if (msg.isInt(0))
@@ -43,6 +47,7 @@ void LEDcontrol(OSCMessage &msg)
   else if (msg.isBlob(0))
   {
     int length = msg.getDataLength(0);
+    //a workaround to avoid OSCMessage's bug with blobs, that adds the byte count to the beginning of the actual blob, see: https://github.com/CNMAT/OSC/issues/40
     uint8_t v[length + 4];
     int s = msg.getBlob(0, (unsigned char *)v, min(length + 4, NUM_LEDS * 3));
     memcpy((uint8_t *)leds, v + 4, max(min(s - 4, NUM_LEDS * 3), 0));
@@ -64,9 +69,12 @@ void setDMX(OSCMessage &msg)
 if (msg.isBlob(0))
   {
     int length = msg.getDataLength(0);
-    uint8_t values[length];
-    msg.getBlob(0, (uint8_t *)values, length);
-    Dmx.setChannels(0, values, length);
+    uint8_t DMXvalues[length];
+    //a workaround to avoid OSCMessage's bug with blobs, that adds the byte count to the beginning of the actual blob, see: https://github.com/CNMAT/OSC/issues/40
+    uint8_t values[length+4];
+    int s = msg.getBlob(0, (unsigned char *)values, length + 4);
+    memcpy(DMXvalues, values + 4, s - 4);
+    Dmx.setChannels(0, DMXvalues, length);
   }
 }
 
