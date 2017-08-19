@@ -95,7 +95,7 @@ void setup() {
   
   //FastLED.show(CRGB::White);
   //delay(500);
-  //FastLED.show(CRGB::Black);
+  FastLED.show(CRGB::Black);
 }
 
 void loop() {
