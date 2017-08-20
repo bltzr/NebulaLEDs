@@ -28,7 +28,7 @@ void ofApp::setup(){
       ofLog() << "Opened OSC Sender";
     }
   
-  
+    NetBuffer.clear();
   
     if(playing){
       trame.play();
@@ -40,15 +40,15 @@ void ofApp::setup(){
     std::vector<ofx::IO::SerialDeviceInfo> devicesInfo = ofx::IO::SerialDeviceUtils::listDevices();
     
     //ofLogNotice("ofApp::setup") << "Connected Devices: ";
-    
+
+
     device.name = "/dev/cu.usbmodem1369841";
     device2.name = "/dev/cu.usbmodem1455771";
     device3.name = "/dev/cu.usbmodem1383111";
     //device4.name = "/dev/cu.usbmodem1366241";
     device4.name = "/dev/cu.usbmodem1365391";
   
-    
-    
+
     device.setup();
     device2.setup();
     device3.setup();
@@ -126,135 +126,129 @@ void ofApp::update(){
         ofxOscMessage m;
         receiver.getNextMessage(m);
       
-      if(m.getAddress() == "/play"){
-        //ofLog() << "b" << m.getArgAsInt32(0);
+        if(m.getAddress() == "/play"){
+          //ofLog() << "b" << m.getArgAsInt32(0);
         if(m.getArgAsBool(0)){trame.play(); playing = 1;}
+        
         else if(!m.getArgAsBool(0)){trame.stop(); playing = 0;}
-      }
-      
-      /*
-        else if(m.getAddress() == "/b"){
-            //ofLog() << "b" << m.getArgAsInt32(0);
-            for (int i=0; i<6; i++){
-                setBrightness(i, m.getArgAsInt32(0));
-            }
-        }
-      
-        else if(m.getAddress() == "/t"){
-            //ofLog() << "t" << m.getArgAsInt32(0);
-            setBrightness(6, m.getArgAsInt32(0));
-        }
-      
-        else if(m.getAddress() == "/d"){
-            for (int i=0; i<6; i++){
-                setDither(i, m.getArgAsInt32(0));
-            }
-            //ofLog() << "d" << m.getArgAsInt32(0);
-        }
-      
-        else if(m.getAddress() == "/dt"){
-            setDither(6, m.getArgAsInt32(0));
-            //ofLog() << "d" << m.getArgAsInt32(0);
-        }
-     
+        
         else if(m.getAddress() == "/image"){
-          //    ofLog() << "nArgs" << m.getNumArgs();
-          //NetBuffer.clear();
-          NetBuffer = m.getArgAsBlob(0);
+            //    ofLog() << "nArgs" << m.getNumArgs();
+            NetBuffer.clear();
+            NetBuffer = m.getArgAsBlob(0);
+          }
+
         }
-     */
+        
+
+        /*
+          else if(m.getAddress() == "/b"){
+              //ofLog() << "b" << m.getArgAsInt32(0);
+              for (int i=0; i<6; i++){
+                  setBrightness(i, m.getArgAsInt32(0));
+              }
+          }
+        
+          else if(m.getAddress() == "/t"){
+              //ofLog() << "t" << m.getArgAsInt32(0);
+              setBrightness(6, m.getArgAsInt32(0));
+          }
+        
+          else if(m.getAddress() == "/d"){
+              for (int i=0; i<6; i++){
+                  setDither(i, m.getArgAsInt32(0));
+              }
+              //ofLog() << "d" << m.getArgAsInt32(0);
+          }
+        
+          else if(m.getAddress() == "/dt"){
+              setDither(6, m.getArgAsInt32(0));
+              //ofLog() << "d" << m.getArgAsInt32(0);
+          }
+        */
+          
+        
     }
   
-      trame.update();
+    trame.update();
       
       // get part of the image for the LEDs
       
-      if(playing){
+    if(playing){
         pixels = trame.getPixels();
         //ofLog() << "pixel format: " << pixels.getPixelFormat();
         //LEDs = pixels.getData();
-        
-        // get part of the image for the PWMs
-        //ofPixels PWMPix;
-        pixels.cropTo(PWMPix, 0, 42, 22, 1);
-        DMX = PWMPix.getData();
-        printf ("%s",DMX);
-        //ofLog() << "DMX: " << DMX << "_";
-        sendDMX();
-        
-        // get part of the image for the Brightnesses
-        //ofPixels BrightPix;
-        pixels.cropTo(BrightPix, 41, 42, 4, 1);
-        Brights = BrightPix.getData();
-
- 
-        // /d - Fond dither
-        for (int i=0; i<6; i++){
-          setDither(i, (int)Brights[0]);
-        }
-        //ofLog() << "d" <<  (int)Brights[0];
-        
-        // /b - Fond brightness
-        for (int i=0; i<6; i++){
-          setBrightness(i, (int)Brights[3]/8);
-        }
-        //ofLog() << "b" << (int)Brights[3]/8;
-        
-        // /dt - Tour dither
-        setDither(6, Brights[6]);
-        //ofLog() << "dt" <<  (int)Brights[6];
-        
-        // /bt - Tour dither
-        setBrightness(6, (int)Brights[9]/8);
-        //ofLog() << "bt" << (int)Brights[9]/8;
-   
-        
-     
-        if (send){
-          
-          imgAsBuffer.clear();
-          imgAsBuffer.append((const char*)pixels.getData(),pixels.size());
-
-          ofxOscMessage m;
-          m.setAddress("/image");
-          m.addBlobArg(imgAsBuffer);
-          sender.sendMessage(m);
-          
-          
-          PWMBuffer.clear();
-          PWMBuffer.append((const char*)PWMPix.getData(), PWMPix.size());
-
-          ofxOscMessage n;
-          n.setAddress("/PWMs");
-          n.addBlobArg(PWMBuffer);
-          sender.sendMessage(n);
-          
-
-          BrightBuffer.clear();
-          BrightBuffer.append((const char*)BrightPix.getData(), BrightPix.size());
-          
-          ofxOscMessage o;
-          o.setAddress("/brights");
-          o.addBlobArg(PWMBuffer);
-          sender.sendMessage(o);
-
         }
 
-      }
-      
-      else{
-        //LEDs = (unsigned char*) NetBuffer.getData();
+    else{
+        //pixels.setFromExternalPixels((unsigned char*)NetBuffer.getData(), 45, 45, 3);
         // TODO: fill pixels with the Network Data
-      }
-      //ofLog()<<brightness;
+        }
+        
+    // get part of the image for the PWMs
+    //ofPixels PWMPix;
+    pixels.cropTo(PWMPix, 0, 42, 22, 1);
+    DMX = PWMPix.getData();
+    printf ("%s",DMX);
+    //ofLog() << "DMX: " << DMX << "_";
+    sendDMX();
+    
+    // get part of the image for the Brightnesses
+    //ofPixels BrightPix;
+    pixels.cropTo(BrightPix, 41, 42, 4, 1);
+    Brights = BrightPix.getData();
+    // /d - Fond dither
+    for (int i=0; i<6; i++){
+      setDither(i, (int)Brights[0]);
+    }
+    //ofLog() << "d" <<  (int)Brights[0];
+    
+    // /b - Fond brightness
+    for (int i=0; i<6; i++){
+      setBrightness(i, (int)Brights[3]/8);
+    }
+    //ofLog() << "b" << (int)Brights[3]/8;
+    
+    // /dt - Tour dither
+    setDither(6, Brights[6]);
+    //ofLog() << "dt" <<  (int)Brights[6];
+    
+    // /bt - Tour dither
+    setBrightness(6, (int)Brights[9]/8);
+    //ofLog() << "bt" << (int)Brights[9]/8;
+    
+ 
+    if (send){
       
-
+      imgAsBuffer.clear();
+      imgAsBuffer.append((const char*)pixels.getData(),pixels.size());
+      ofxOscMessage m;
+      m.setAddress("/image");
+      m.addBlobArg(imgAsBuffer);
+      sender.sendMessage(m);
       
-    //}
+      
+      PWMBuffer.clear();
+      PWMBuffer.append((const char*)PWMPix.getData(), PWMPix.size());
+      ofxOscMessage n;
+      n.setAddress("/PWMs");
+      n.addBlobArg(PWMBuffer);
+      sender.sendMessage(n);
+      
+      BrightBuffer.clear();
+      BrightBuffer.append((const char*)BrightPix.getData(), BrightPix.size());
+      
+      ofxOscMessage o;
+      o.setAddress("/brights");
+      o.addBlobArg(PWMBuffer);
+      sender.sendMessage(o);
+    }
+   
+    
 
     for (int i=0; i<7; i++) {
-    sendLine(i);
-    }
+        sendLine(i);
+        }
 
 }
 
