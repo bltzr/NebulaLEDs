@@ -155,6 +155,7 @@ void ofApp::update(){
       }
       
       else if(m.getAddress() == "/image"){
+        if (!playing){
             //NetBuffer.clear();
             NetBuffer = m.getArgAsBlob(0);
             /*
@@ -163,9 +164,10 @@ void ofApp::update(){
             std::cerr << std::endl;
             ofLog() << "image size: " << NetBuffer.size();
             */
-            }
+          }
+      }
 
-        
+      
         
 
         /*
