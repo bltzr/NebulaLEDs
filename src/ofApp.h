@@ -85,7 +85,7 @@ class ofApp : public ofBaseApp {
         ofImage img, PWMimg, Brightimg;
         unsigned char * Brights, * DMX, * NET;
   
-        int playing = 0;
+        int playing = 1;
   
         //string host = "Nebula.local";
         int width = 45, height = 45, DMXchannels = 64;
