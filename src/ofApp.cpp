@@ -28,7 +28,8 @@ void ofApp::setup(){
       ofLog() << "Opened OSC Sender";
     }
   
-    NetBuffer.clear();
+    NetBuffer.allocate(width*height*3);
+    for (int i=0;i<width*height*3;i++) NetBuffer.getData()[i] = 0;
   
     if(playing){
       trame.play();
@@ -129,7 +130,7 @@ void ofApp::update(){
         if(m.getAddress() == "/play"){
           ofLog() << "play" << m.getArgAsInt32(0);
           if(m.getArgAsBool(0)){trame.play(); playing = 1;}
-          else if(!m.getArgAsBool(0)){trame.stop(); playing = 0;}
+          else if(!m.getArgAsBool(0)){trame.stop(); playing = 0; for (int i=0;i<width*height*3;i++) NetBuffer.getData()[i] = 0;}
         }
       
       if(m.getAddress() == "/pause"){
@@ -152,10 +153,14 @@ void ofApp::update(){
       }
       
       else if(m.getAddress() == "/image"){
-            //    ofLog() << "nArgs" << m.getNumArgs();
             //NetBuffer.clear();
             NetBuffer = m.getArgAsBlob(0);
+            /*
+            NET = (unsigned char *)NetBuffer.getData();
+            for(int i = 0;i < 64; i++) std::cerr << (int)NET[i] << " ";
+            std::cerr << std::endl;
             ofLog() << "image size: " << NetBuffer.size();
+            */
             }
 
         
@@ -190,9 +195,11 @@ void ofApp::update(){
         
     }
   
+  
     trame.update();
       
-      // get part of the image for the LEDs
+  
+    // get part of the image for the LEDs
       
     if(playing){
         pixels = trame.getPixels();
@@ -204,6 +211,8 @@ void ofApp::update(){
         pixels.setFromExternalPixels((unsigned char*)NetBuffer.getData(), 45, 45, 3);
         // TODO: fill pixels with the Network Data
         }
+  
+  
         
     // get part of the image for the PWMs
     //ofPixels PWMPix;
@@ -407,7 +416,7 @@ void ofApp::sendLine(int i) {
 
 
 
-//--------------------------------------------------------------
+//-------------------------------------------------------------
 void ofApp::draw(){
   
 #ifdef __APPLE__
@@ -417,10 +426,10 @@ void ofApp::draw(){
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     
-  //trame.play();
-    trame.draw(20, 20, 450, 450);
+    //trame.play();
+    //trame.draw(20, 20, 450, 450);
 
-    /*
+  
     for (int i=0; i<6; i++) {
         ofImage img;
         img.setFromPixels(ledLine[i].pixelCrop);
@@ -430,15 +439,70 @@ void ofApp::draw(){
     ofImage img;
     img.setFromPixels(ledLine[6].pixelCrop);
     img.draw(500, 600, 450, ledLine[6].size*30);
-    */
-    ofImage img;
-    img.setFromPixels(BrightPix);
-    img.draw(500, 600, 450, 50);
+  
+
+    img.setFromPixels(pixels);
+    img.draw(20, 20, 450, 450);
+  
+    Brightimg.setFromPixels(BrightPix);
+    Brightimg.draw(500, 600, 450, 50);
   
 #endif
 
 
 }
+
+//-------------------------------------------------------------
+void ofApp::exit(){
+
+  playing = 0;
+  for (int i=0;i<width*height*3;i++) NetBuffer.getData()[i] = 0;
+  
+  pixels.setFromExternalPixels((unsigned char*)NetBuffer.getData(), 45, 45, 3);
+  // TODO: fill pixels with the Network Data
+
+
+  // get part of the image for the PWMs
+  //ofPixels PWMPix;
+  pixels.cropTo(PWMPix, 0, 42, 22, 1);
+  DMX = PWMPix.getData();
+  //ofLog() << "DMX: " << DMX << "_";
+  sendDMX();
+  
+  // get part of the image for the Brightnesses
+  //ofPixels BrightPix;
+  pixels.cropTo(BrightPix, 41, 42, 4, 1);
+  Brights = BrightPix.getData();
+  // /d - Fond dither
+  for (int i=0; i<6; i++){
+    setDither(i, (int)Brights[0]);
+  }
+  //ofLog() << "d" <<  (int)Brights[0];
+  
+  // /b - Fond brightness
+  for (int i=0; i<6; i++){
+    setBrightness(i, (int)Brights[3]/8);
+  }
+  //ofLog() << "b" << (int)Brights[3]/8;
+  
+  // /dt - Tour dither
+  setDither(6, Brights[6]);
+  //ofLog() << "dt" <<  (int)Brights[6];
+  
+  // /bt - Tour dither
+  setBrightness(6, (int)Brights[9]/8);
+  //ofLog() << "bt" << (int)Brights[9]/8;
+
+  
+  for (int i=0; i<7; i++) {
+    sendLine(i);
+  }
+  
+  
+}
+
+//-------------------------------------------------------------
+//-------------------------------------------------------------
 
 
 void ofApp::onSerialBuffer(const ofx::IO::SerialBufferEventArgs& args)
