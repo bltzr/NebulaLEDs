@@ -6,7 +6,7 @@ void ofApp::setup(){
 
     ofSetWindowTitle("NebulaLEDs");
 
-    receiver.setup(PORT);
+    receiver.setup(PORTIN);
     ofLog() << "Opened OSC Receiver";
   
     
@@ -127,18 +127,38 @@ void ofApp::update(){
         receiver.getNextMessage(m);
       
         if(m.getAddress() == "/play"){
-          //ofLog() << "b" << m.getArgAsInt32(0);
-        if(m.getArgAsBool(0)){trame.play(); playing = 1;}
-        
-        else if(!m.getArgAsBool(0)){trame.stop(); playing = 0;}
-        
-        else if(m.getAddress() == "/image"){
-            //    ofLog() << "nArgs" << m.getNumArgs();
-            NetBuffer.clear();
-            NetBuffer = m.getArgAsBlob(0);
-          }
-
+          ofLog() << "play" << m.getArgAsInt32(0);
+          if(m.getArgAsBool(0)){trame.play(); playing = 1;}
+          else if(!m.getArgAsBool(0)){trame.stop(); playing = 0;}
         }
+      
+      if(m.getAddress() == "/pause"){
+        ofLog() << "pause" << m.getArgAsInt32(0);
+        if(m.getArgAsBool(0)){trame.setPaused(1);}
+        
+        else if(!m.getArgAsBool(0)){trame.setPaused(1);}
+      }
+      
+      if(m.getAddress() == "/position"){
+        ofLog() << "position" << m.getArgAsFloat(0);
+        trame.setPosition(m.getArgAsFloat(0));
+   
+      }
+      
+      if(m.getAddress() == "/speed"){
+        ofLog() << "speed" << m.getArgAsFloat(0);
+        trame.setSpeed(m.getArgAsFloat(0));
+        
+      }
+      
+      else if(m.getAddress() == "/image"){
+            //    ofLog() << "nArgs" << m.getNumArgs();
+            //NetBuffer.clear();
+            NetBuffer = m.getArgAsBlob(0);
+            ofLog() << "image size: " << NetBuffer.size();
+            }
+
+        
         
 
         /*
@@ -181,7 +201,7 @@ void ofApp::update(){
         }
 
     else{
-        //pixels.setFromExternalPixels((unsigned char*)NetBuffer.getData(), 45, 45, 3);
+        pixels.setFromExternalPixels((unsigned char*)NetBuffer.getData(), 45, 45, 3);
         // TODO: fill pixels with the Network Data
         }
         
@@ -189,7 +209,6 @@ void ofApp::update(){
     //ofPixels PWMPix;
     pixels.cropTo(PWMPix, 0, 42, 22, 1);
     DMX = PWMPix.getData();
-    printf ("%s",DMX);
     //ofLog() << "DMX: " << DMX << "_";
     sendDMX();
     
@@ -391,6 +410,7 @@ void ofApp::sendLine(int i) {
 //--------------------------------------------------------------
 void ofApp::draw(){
   
+#ifdef __APPLE__
 
     // Clear with alpha, so we can capture via syphon and composite elsewhere should we want.
     glClearColor(0.0, 0.0, 0.0, 0.0);
@@ -415,7 +435,7 @@ void ofApp::draw(){
     img.setFromPixels(BrightPix);
     img.draw(500, 600, 450, 50);
   
-
+#endif
 
 
 }
