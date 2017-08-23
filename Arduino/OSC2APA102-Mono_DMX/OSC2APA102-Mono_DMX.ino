@@ -9,7 +9,6 @@
 */
 #include <OSCBundle.h>
 #include <PacketSerial.h>
-#include <rdm.h>
 #include <TeensyDmx.h>
 #include "APA102_WithGlobalBrightness.h"
 
@@ -35,7 +34,7 @@ CRGB leds[NUM_LEDS];
 char brightness = 255;
 int i = 0;
 
-TeensyDmx Dmx(Serial1, DMX_REDE);
+TeensyDmx Dmx(Serial1);
 
 
 void LEDcontrol(OSCMessage &msg)
@@ -112,7 +111,6 @@ void setup() {
 void loop() {
   serial.update();
   FastLED.show();
-  Dmx.loop();
 }
 
 
