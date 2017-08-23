@@ -68,12 +68,9 @@ void setDMX(OSCMessage &msg)
 if (msg.isBlob(0))
   {
     int length = msg.getDataLength(0);
-    uint8_t DMXvalues[length];
-    //a workaround to avoid OSCMessage's bug with blobs, that adds the byte count to the beginning of the actual blob, see: https://github.com/CNMAT/OSC/issues/40
-    uint8_t values[length+4];
-    int s = msg.getBlob(0, (unsigned char *)values, length + 4);
-    memcpy(DMXvalues, values + 4, s - 4);
-    Dmx.setChannels(0, DMXvalues, length);
+    uint8_t DMXvalues[length+4];
+    int s = msg.getBlob(0, (unsigned char *)DMXvalues, length + 4);
+    Dmx.setChannels(0, DMXvalues+4, length);
   }
 }
 
