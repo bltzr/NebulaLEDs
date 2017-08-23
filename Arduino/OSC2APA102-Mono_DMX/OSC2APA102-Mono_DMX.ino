@@ -30,7 +30,7 @@ PacketSerial_<SLIP, SLIP::END, 8192> serial;
 
 APA102Controller_WithBrightness<DATA_PIN, CLOCK_PIN, BGR, DATA_RATE_MHZ(4)> ledController;
 
-CRGB leds[NUM_LEDS];
+CRGB leds[NUM_LEDS+1];
 char brightness = 255;
 int i = 0;
 
@@ -47,9 +47,7 @@ void LEDcontrol(OSCMessage &msg)
   {
     int length = msg.getDataLength(0);
     //a workaround to avoid OSCMessage's bug with blobs, that adds the byte count to the beginning of the actual blob, see: https://github.com/CNMAT/OSC/issues/40
-    uint8_t v[length + 4];
-    int s = msg.getBlob(0, (unsigned char *)v, min(length + 4, NUM_LEDS * 3));
-    memcpy((uint8_t *)leds, v + 4, max(min(s - 4, NUM_LEDS * 3), 0));
+    int s = msg.getBlob(0, (unsigned char *)leds, length);
   }
 }
 
@@ -92,7 +90,7 @@ void setup() {
   // We must specify a packet handler method so that
   serial.setPacketHandler(&onPacket);
   serial.begin(12000000); // baudrate is ignored, is always run at 12Mbps
-  FastLED.addLeds((CLEDController*) &ledController, leds, NUM_LEDS);
+  FastLED.addLeds((CLEDController*) &ledController, leds+1, NUM_LEDS);
   
   ledController.setAPA102Brightness(1);
 
