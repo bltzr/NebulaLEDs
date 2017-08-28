@@ -40,9 +40,7 @@ void LEDcontrol(OSCMessage &msg)
   else if (msg.isBlob(0))
   {
     int length = msg.getDataLength(0);
-    uint8_t v[length + 4];
-    int s = msg.getBlob(0, (unsigned char *)v, min(length + 4, NUM_LEDS * 3));
-    memcpy((uint8_t *)leds, v + 4, max(min(s - 4, NUM_LEDS * 3), 0));
+    int s = msg.getBlob(0, (unsigned char *)leds, length);
   }
 }
 
@@ -55,9 +53,7 @@ void LEDcontrol2(OSCMessage &msg)
   else if (msg.isBlob(0))
   {
     int length = msg.getDataLength(0);
-    uint8_t v[length + 4];
-    int s = msg.getBlob(0, (unsigned char *)v, min(length + 4, NUM_LEDS2 * 3));
-    memcpy((uint8_t *)leds2, v + 4, max(min(s - 4, NUM_LEDS2 * 3), 0));
+    int s = msg.getBlob(0, (unsigned char *)leds2, length);
   }
 }
 

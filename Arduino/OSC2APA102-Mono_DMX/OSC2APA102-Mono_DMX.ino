@@ -20,8 +20,6 @@ PacketSerial_<SLIP, SLIP::END, 8192> serial;
 // How many DMX channels at Max?
 #define NUM_DMX 64
 
-#define DMX_REDE 2
-
 // For led chips like Neopixels, which have a data line, ground, and power, you just
 // need to define DATA_PIN.  For led chipsets that are SPI based (four wires - data, clock,
 // ground, and power), like the LPD8806 define both DATA_PIN and CLOCK_PIN
@@ -30,10 +28,11 @@ PacketSerial_<SLIP, SLIP::END, 8192> serial;
 
 APA102Controller_WithBrightness<DATA_PIN, CLOCK_PIN, BGR, DATA_RATE_MHZ(4)> ledController;
 
-CRGB leds[NUM_LEDS+1];
+CRGB leds[NUM_LEDS];
 char brightness = 255;
 int i = 0;
 
+uint8_t DMXvalues[NUM_DMX];
 TeensyDmx Dmx(Serial1);
 
 
@@ -46,7 +45,6 @@ void LEDcontrol(OSCMessage &msg)
   else if (msg.isBlob(0))
   {
     int length = msg.getDataLength(0);
-    //a workaround to avoid OSCMessage's bug with blobs, that adds the byte count to the beginning of the actual blob, see: https://github.com/CNMAT/OSC/issues/40
     int s = msg.getBlob(0, (unsigned char *)leds, length);
   }
 }
@@ -66,9 +64,8 @@ void setDMX(OSCMessage &msg)
 if (msg.isBlob(0))
   {
     int length = msg.getDataLength(0);
-    uint8_t DMXvalues[length+4];
-    int s = msg.getBlob(0, (unsigned char *)DMXvalues, length + 4);
-    Dmx.setChannels(0, DMXvalues+4, length);
+    int s = msg.getBlob(0, (unsigned char *)DMXvalues, length);
+    Dmx.setChannels(0, DMXvalues, length);
   }
 }
 
