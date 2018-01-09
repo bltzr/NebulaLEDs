@@ -14,14 +14,14 @@
 PacketSerial_<SLIP, SLIP::END, 8192> serial;
 
 // How many leds in your strip?
-#define NUM_LEDS 196
+#define NUM_LEDS 10
 
 
 // For led chips like Neopixels, which have a data line, ground, and power, you just
 // need to define DATA_PIN.  For led chipsets that are SPI based (four wires - data, clock,
 // ground, and power), like the LPD8806 define both DATA_PIN and CLOCK_PIN
 #define DATA_PIN 11
-#define CLOCK_PIN 13
+#define CLOCK_PIN 27  // 27 for teensy >= 3.5 / for <3.5, use pin 13 (which causes the LED to stay lit
 
 APA102Controller_WithBrightness<DATA_PIN, CLOCK_PIN, BGR, DATA_RATE_MHZ(4)> ledController;
 
