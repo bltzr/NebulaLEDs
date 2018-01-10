@@ -1,10 +1,10 @@
 /*
-  SLIP-OSC.ino
+  OSC2APA102.ino
 
   listen on USB Serial for slip encoded OSC packet
-  to switch an LED on and off
+  to switch an LED strip on and off
 
-  Copyright Antoine Villeret - 2015
+  Copyright Antoine Villeret / Pascal Baltazar - 2015/2017
 
 */
 #include <OSCBundle.h>
@@ -17,9 +17,8 @@ PacketSerial_<SLIP, SLIP::END, 8192> serial;
 #define NUM_LEDS 320 
 #define NUM_LEDS2 320
 
-// For led chips like Neopixels, which have a data line, ground, and power, you just
-// need to define DATA_PIN.  For led chipsets that are SPI based (four wires - data, clock,
-// ground, and power), like the LPD8806 define both DATA_PIN and CLOCK_PIN
+// APA102 LED strips are SPI based (four wires - data, clock,
+// ground, and power), so we have to define DATA_PIN and CLOCK_PIN
 #define DATA_PIN 11
 #define CLOCK_PIN 13
 #define DATA_PIN2 7
@@ -27,9 +26,8 @@ PacketSerial_<SLIP, SLIP::END, 8192> serial;
 
 APA102Controller_WithBrightness<DATA_PIN, CLOCK_PIN, BGR, DATA_RATE_MHZ(6)> ledController;
 APA102Controller_WithBrightness<DATA_PIN2, CLOCK_PIN2, BGR, DATA_RATE_MHZ(6)> ledController2;
+
 CRGB leds[NUM_LEDS], leds2[NUM_LEDS2];
-char brightness = 255;
-int i = 0;
 
 void LEDcontrol(OSCMessage &msg)
 {
@@ -39,8 +37,7 @@ void LEDcontrol(OSCMessage &msg)
   }
   else if (msg.isBlob(0))
   {
-    int length = msg.getDataLength(0);
-    int s = msg.getBlob(0, (unsigned char *)leds, length);
+    msg.getBlob(0, (unsigned char *)leds);
   }
 }
 
@@ -52,8 +49,7 @@ void LEDcontrol2(OSCMessage &msg)
   }
   else if (msg.isBlob(0))
   {
-    int length = msg.getDataLength(0);
-    int s = msg.getBlob(0, (unsigned char *)leds2, length);
+    msg.getBlob(0, (unsigned char *)leds2);
   }
 }
 
@@ -68,7 +64,7 @@ void setGlobalBrightness(OSCMessage &msg)
 void onPacket(const uint8_t* buffer, size_t size) {
   OSCBundle bundleIN;
 
-  for (int i = 0; i < size; i++) {
+  for (uint32_t i = 0; i < size; i++) {
     bundleIN.fill(buffer[i]);
   }
 
@@ -86,11 +82,11 @@ void setup() {
   FastLED.addLeds((CLEDController*) &ledController, leds, NUM_LEDS);
   FastLED.addLeds((CLEDController*) &ledController2, leds2, NUM_LEDS);
 
+  // Setting brightness to minimum
   ledController.setAPA102Brightness(1);
   ledController2.setAPA102Brightness(1);
   
-  //FastLED.show(CRGB::White);
-  //delay(500);
+    // Turn off all LEDs 
   FastLED.show(CRGB::Black);
 }
 

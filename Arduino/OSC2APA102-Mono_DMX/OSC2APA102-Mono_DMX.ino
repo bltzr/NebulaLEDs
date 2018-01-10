@@ -67,7 +67,7 @@ void setDMX(OSCMessage &msg)
 void onPacket(const uint8_t* buffer, size_t size) {
   OSCBundle bundleIN;
 
-  for (uint8_t i = 0; i < size; i++) {
+  for (uint32_t i = 0; i < size; i++) {
     bundleIN.fill(buffer[i]);
   }
 
