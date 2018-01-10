@@ -1,6 +1,6 @@
 This Arduino Sketch requires the following libraries :
  - [https://github.com/avilleret/PacketSerial/tree/feature/SLIPEncoding](https://github.com/avilleret/PacketSerial/tree/feature/SLIPEncoding)
- - [https://github.com/CNMAT/OSC.git](https://github.com/CNMAT/OSC.git)
+ - [https://github.com/bltzr/OSC.git](https://github.com/bltzr/OSC.git)
 For OSC2APA102-Mono_DMX: 
 - [https://github.com/chrisstaite/TeensyDmx.git](https://github.com/chrisstaite/TeensyDmx.git)
 For OSC2APA102-Mono_SimpleDMX (not tested):
