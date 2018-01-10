@@ -1,10 +1,10 @@
 /*
-  SLIP-OSC.ino
+  OSC2APA102.ino
 
   listen on USB Serial for slip encoded OSC packet
-  to switch an LED on and off
+  to switch an LED strip on and off
 
-  Copyright Antoine Villeret - 2015
+  Copyright Antoine Villeret / Pascal Baltazar - 2015/2017
 
 */
 #include <OSCBundle.h>
@@ -30,6 +30,7 @@ APA102Controller_WithBrightness<DATA_PIN, CLOCK_PIN, BGR, DATA_RATE_MHZ(4)> ledC
 
 CRGB leds[NUM_LEDS];
 
+
 uint8_t DMXvalues[NUM_DMX];
 TeensyDmx Dmx(Serial1);
 
@@ -42,7 +43,7 @@ void LEDcontrol(OSCMessage &msg)
   }
   else if (msg.isBlob(0))
   {
-    msg.getBlob(0, (unsigned char *)leds, msg.getDataLength(0));
+    msg.getBlob(0, (unsigned char *)leds);
   }
 }
 
@@ -55,23 +56,19 @@ void setGlobalBrightness(OSCMessage &msg)
   }
 }
 
-
 void setDMX(OSCMessage &msg)
 {
-if (msg.isBlob(0))
+  if (msg.isBlob(0))
   {
-    int length = msg.getDataLength(0);
-    msg.getBlob(0, (unsigned char *)DMXvalues, length);
-    Dmx.setChannels(0, DMXvalues, length);
+    Dmx.setChannels(0, DMXvalues, msg.getBlob(0, (unsigned char *)DMXvalues));
   }
 }
 
 void onPacket(const uint8_t* buffer, size_t size) {
   OSCBundle bundleIN;
 
-  for (int i = 0; i < size; i++) {
+  for (uint8_t i = 0; i < size; i++) {
     bundleIN.fill(buffer[i]);
-    
   }
 
   if (!bundleIN.hasError()) {
@@ -92,8 +89,8 @@ void setup() {
 
   // Setting brightness to minimum
   ledController.setAPA102Brightness(1);
-  
-  // Turn off all LEDs 
+
+  // Turn off all LEDs
   FastLED.show(CRGB::Black);
 }
 
