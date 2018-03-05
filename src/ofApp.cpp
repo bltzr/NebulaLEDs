@@ -9,26 +9,26 @@ void ofApp::setup(){
     receiver.setup(PORT);
     
     mClient.setup();
-    tClient.setup();
+//    tClient.setup();
     
-    mClient.set("Fond","Max");
-    tClient.set("Tour","Max");
+    mClient.set("Interlude","Max");
+//    tClient.set("Tour","Max");
 
     
     // display
     ofSetFrameRate(60); // if vertical sync is off, we can go a bit fast... this caps the framerate at 60fps.
     
     
-    fbo.allocate(45, 45, GL_RGB);
+    fbo.allocate(66, 24, GL_RGB);
     fbo.begin();
     ofClear(0,0,0);
     fbo.end();
  
     
-    fboTour.allocate(191, 1, GL_RGB);
-    fboTour.begin();
-    ofClear(0,0,0);
-    fboTour.end();
+//    fboTour.allocate(191, 1, GL_RGB);
+//    fboTour.begin();
+//    ofClear(0,0,0);
+//    fboTour.end();
     
     
     // setup Serial
@@ -41,14 +41,14 @@ void ofApp::setup(){
     device2.name = "/dev/cu.usbmodem1455771";
     device3.name = "/dev/cu.usbmodem1383111";
     //device4.name = "/dev/cu.usbmodem1366241";
-    device4.name = "/dev/cu.usbmodem1365391";
+    //device4.name = "/dev/cu.usbmodem1365391";
   
     
     
     device.setup();
     device2.setup();
     device3.setup();
-    device4.setup();
+    //device4.setup();
     
     //ligne 1 : Fond - T1 - /l1 - nPixels = 565 - x = 0 - h = 13
     //ligne 2 : Fond - T1 - /l2 - nPixels = 495 - x = 13 - h = 11
@@ -58,58 +58,58 @@ void ofApp::setup(){
     ledLine[0].dev = &device;
     ledLine[0].src = &pixels;
     ledLine[0].address = "/1";
-    ledLine[0].nbPix = 315;
+    ledLine[0].nbPix = 264;
     ledLine[0].offset = 0;
-    ledLine[0].size = 7;
-    ledLine[0].Xsize = 45;
+    ledLine[0].size = 4;
+    ledLine[0].Xsize = 66;
     
     ledLine[1].dev = &device;
     ledLine[1].src = &pixels;
     ledLine[1].address = "/2";
-    ledLine[1].nbPix = 250;
-    ledLine[1].offset = 7;
-    ledLine[1].size = 6;
-    ledLine[1].Xsize = 45;
+    ledLine[1].nbPix = 264;
+    ledLine[1].offset = 4;
+    ledLine[1].size = 4;
+    ledLine[1].Xsize = 66;
 
     ledLine[2].dev = &device2;
     ledLine[2].src = &pixels;
     ledLine[2].address = "/1";
-    ledLine[2].nbPix = 270;
-    ledLine[2].offset = 13;
-    ledLine[2].size = 6;
-    ledLine[2].Xsize = 45;
+    ledLine[2].nbPix = 81;
+    ledLine[2].offset = 8;
+    ledLine[2].size = 4;
+    ledLine[2].Xsize = 66;
 
     ledLine[3].dev = &device2;
     ledLine[3].src = &pixels;
     ledLine[3].address = "/2";
-    ledLine[3].nbPix = 225;
-    ledLine[3].offset = 19;
-    ledLine[3].size = 5;
-    ledLine[3].Xsize = 45;
+    ledLine[3].nbPix = 264;
+    ledLine[3].offset = 12;
+    ledLine[3].size = 2;
+    ledLine[3].Xsize = 66;
     
     ledLine[4].dev = &device3;
     ledLine[4].src = &pixels;
     ledLine[4].address = "/1";
-    ledLine[4].nbPix = 250;
-    ledLine[4].offset = 24;
-    ledLine[4].size = 6;
-    ledLine[4].Xsize = 45;
+    ledLine[4].nbPix = 264;
+    ledLine[4].offset = 16;
+    ledLine[4].size = 4;
+    ledLine[4].Xsize = 66;
     
     ledLine[5].dev = &device3;
     ledLine[5].src = &pixels;
     ledLine[5].address = "/2";
-    ledLine[5].nbPix = 315;
-    ledLine[5].offset = 30;
-    ledLine[5].size = 7;
-    ledLine[5].Xsize = 45;
+    ledLine[5].nbPix = 264;
+    ledLine[5].offset = 20;
+    ledLine[5].size = 4;
+    ledLine[5].Xsize = 66;
     
-    ledLine[6].dev = &device4;
-    ledLine[6].src = &pixTour;
-    ledLine[6].address = "/1";
-    ledLine[6].nbPix = 191;
-    ledLine[6].offset = 0;
-    ledLine[6].size = 1;
-    ledLine[6].Xsize = 191;
+//    ledLine[6].dev = &device4;
+//    ledLine[6].src = &pixTour;
+//    ledLine[6].address = "/1";
+//    ledLine[6].nbPix = 191;
+//    ledLine[6].offset = 0;
+//    ledLine[6].size = 1;
+//    ledLine[6].Xsize = 191;
 
 }
 
@@ -123,11 +123,11 @@ void ofApp::update(){
     
     fbo.readToPixels(pixels);
     
-    fboTour.begin();
-    tClient.draw(0, 0);
-    fboTour.end();
-    
-    fboTour.readToPixels(pixTour);
+//    fboTour.begin();
+//    tClient.draw(0, 0);
+//    fboTour.end();
+//
+//    fboTour.readToPixels(pixTour);
     
     while(receiver.hasWaitingMessages()){
         // get the next message
@@ -135,7 +135,7 @@ void ofApp::update(){
         receiver.getNextMessage(m);
         
         if(m.getAddress() == "/b"){
-            //ofLog() << "b" << m.getArgAsInt32(0);
+            ofLog() << "b" << m.getArgAsInt32(0);
             for (int i=0; i<6; i++){
                 setBrightness(i, m.getArgAsInt32(0));
             }
@@ -144,19 +144,19 @@ void ofApp::update(){
             //ofLog() << "t" << m.getArgAsInt32(0);
             setBrightness(6, m.getArgAsInt32(0));
         }
-        else if(m.getAddress() == "/d"){
-            for (int i=0; i<6; i++){
-                setDither(i, m.getArgAsInt32(0));
-            }
-            //ofLog() << "d" << m.getArgAsInt32(0);
-        }
-        else if(m.getAddress() == "/dt"){
-            setDither(6, m.getArgAsInt32(0));
-            //ofLog() << "d" << m.getArgAsInt32(0);
-        }
+//        else if(m.getAddress() == "/d"){
+//            for (int i=0; i<6; i++){
+//                setDither(i, m.getArgAsInt32(0));
+//            }
+//            ofLog() << "d" << m.getArgAsInt32(0);
+//        }
+//        else if(m.getAddress() == "/dt"){
+//            setDither(6, m.getArgAsInt32(0));
+//            //ofLog() << "d" << m.getArgAsInt32(0);
+//        }
     }
   
-    for (int i=0; i<7; i++) {
+    for (int i=0; i<6; i++) {
     sendLine(i);
     }
     
@@ -273,17 +273,17 @@ void ofApp::draw(){
     
     
     fbo.draw(20, 20, 450, 450);
-    fboTour.draw(20, 500, 220, 220);
+//    fboTour.draw(20, 500, 220, 220);
     
     for (int i=0; i<6; i++) {
         ofImage img;
         img.setFromPixels(ledLine[i].pixelCrop);
-        img.draw(500, ledLine[i].offset*15, 450, ledLine[i].size*10);
+        img.draw(500, ledLine[i].offset*15+20, 450, ledLine[i].size*10);
     }
     
-    ofImage img;
-    img.setFromPixels(ledLine[6].pixelCrop);
-    img.draw(500, 600, 450, ledLine[6].size*30);
+//    ofImage img;
+//    img.setFromPixels(ledLine[6].pixelCrop);
+//    img.draw(500, 600, 450, ledLine[6].size*30);
     
 
 

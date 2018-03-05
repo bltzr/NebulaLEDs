@@ -68,10 +68,10 @@ class ofApp : public ofBaseApp {
 		void update();
 		void draw();
     
-        ofFbo fbo, fboTour;
-        ofPixels pixels, pixTour;
+    ofFbo fbo ; //, fboTour;
+    ofPixels pixels ; //, pixTour;
     
-        ofxSyphonClient mClient, tClient;
+        ofxSyphonClient mClient ; //, tClient;
     
         ofxOscReceiver receiver;
     
@@ -81,11 +81,11 @@ class ofApp : public ofBaseApp {
         void setBrightness(int line, int brightness);
         void setDither(int line, int dither);
   
-        Teensy device, device2, device3, device4;
+    Teensy device, device2, device3 ; //, device4;
     
         std::vector<SerialMessage> serialMessages;
     
-        LedLine ledLine[7];
+        LedLine ledLine[6];
     
         int current_msg_string;
         string msg_strings[NUM_MSG_STRINGS];
