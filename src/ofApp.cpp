@@ -18,7 +18,7 @@ void ofApp::setup(){
     trame.setPixelFormat(OF_PIXELS_RGB);
   
     //trame.load("bright.mov");
-    trame.load("/data/Nebula.mov");
+    trame.load("test.mov");
     ofLog() << "Loaded Mov";
     trame.setLoopState(OF_LOOP_NORMAL);
   
@@ -65,58 +65,58 @@ void ofApp::setup(){
     ledLine[0].dev = &device;
     ledLine[0].src = &pixels;
     ledLine[0].address = "/1";
-    ledLine[0].nbPix = 315;
+    ledLine[0].nbPix = 132;
     ledLine[0].offset = 0;
-    ledLine[0].size = 7;
-    ledLine[0].Xsize = 45;
+    ledLine[0].size = 2;
+    ledLine[0].Xsize = 66;
     
     ledLine[1].dev = &device;
     ledLine[1].src = &pixels;
     ledLine[1].address = "/2";
-    ledLine[1].nbPix = 250;
-    ledLine[1].offset = 7;
-    ledLine[1].size = 6;
-    ledLine[1].Xsize = 45;
+    ledLine[1].nbPix = 132;
+    ledLine[1].offset = 2;
+    ledLine[1].size = 2;
+    ledLine[1].Xsize = 66;
 
     ledLine[2].dev = &device2;
     ledLine[2].src = &pixels;
     ledLine[2].address = "/1";
-    ledLine[2].nbPix = 270;
-    ledLine[2].offset = 13;
-    ledLine[2].size = 6;
-    ledLine[2].Xsize = 45;
+    ledLine[2].nbPix = 132;
+    ledLine[2].offset = 4;
+    ledLine[2].size = 2;
+    ledLine[2].Xsize = 66;
 
     ledLine[3].dev = &device2;
     ledLine[3].src = &pixels;
     ledLine[3].address = "/2";
-    ledLine[3].nbPix = 225;
-    ledLine[3].offset = 19;
-    ledLine[3].size = 5;
-    ledLine[3].Xsize = 45;
+    ledLine[3].nbPix = 132;
+    ledLine[3].offset = 6;
+    ledLine[3].size = 2;
+    ledLine[3].Xsize = 66;
     
     ledLine[4].dev = &device3;
     ledLine[4].src = &pixels;
     ledLine[4].address = "/1";
-    ledLine[4].nbPix = 250;
-    ledLine[4].offset = 24;
-    ledLine[4].size = 6;
-    ledLine[4].Xsize = 45;
+    ledLine[4].nbPix = 132;
+    ledLine[4].offset = 8;
+    ledLine[4].size = 2;
+    ledLine[4].Xsize = 66;
     
     ledLine[5].dev = &device3;
     ledLine[5].src = &pixels;
     ledLine[5].address = "/2";
-    ledLine[5].nbPix = 315;
-    ledLine[5].offset = 30;
-    ledLine[5].size = 7;
-    ledLine[5].Xsize = 45;
+    ledLine[5].nbPix = 132;
+    ledLine[5].offset = 10;
+    ledLine[5].size = 2;
+    ledLine[5].Xsize = 66;
     
     ledLine[6].dev = &device4;
     ledLine[6].src = &pixels;
     ledLine[6].address = "/1";
-    ledLine[6].nbPix = 191;
-    ledLine[6].offset = 37;
-    ledLine[6].size = 5;
-    ledLine[6].Xsize = 45;
+    ledLine[6].nbPix = 132;
+    ledLine[6].offset = 12;
+    ledLine[6].size = 2;
+    ledLine[6].Xsize = 66;
 
 }
 
@@ -211,7 +211,7 @@ void ofApp::update(){
         }
 
     else{
-        pixels.setFromExternalPixels((unsigned char*)NetBuffer.getData(), 45, 45, 3);
+        pixels.setFromExternalPixels((unsigned char*)NetBuffer.getData(), 66, 24, 3);
         // TODO: fill pixels with the Network Data
         }
 
@@ -219,7 +219,7 @@ void ofApp::update(){
         
     // get part of the image for the PWMs
     //ofPixels PWMPix;
-    pixels.cropTo(PWMPix, 0, 42, 22, 1);
+    pixels.cropTo(PWMPix, 0, 22, 4, 1);
     DMX = PWMPix.getData();
 
     //ofLog() << "DMX: " << DMX << "_";
@@ -227,7 +227,7 @@ void ofApp::update(){
     
     // get part of the image for the Brightnesses
     //ofPixels BrightPix;
-    pixels.cropTo(BrightPix, 41, 42, 4, 1);
+    pixels.cropTo(BrightPix, 0, 20, 4, 1);
     Brights = BrightPix.getData();
     // /d - Fond dither
     for (int i=0; i<6; i++){
@@ -462,7 +462,7 @@ void ofApp::exit(){
   playing = 0;
   for (int i=0;i<width*height*3;i++) NetBuffer.getData()[i] = 0;
   
-  pixels.setFromExternalPixels((unsigned char*)NetBuffer.getData(), 45, 45, 3);
+  pixels.setFromExternalPixels((unsigned char*)NetBuffer.getData(), 66, 24, 3);
   // TODO: fill pixels with the Network Data
 
 

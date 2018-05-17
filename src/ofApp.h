@@ -88,7 +88,7 @@ class ofApp : public ofBaseApp {
         int playing = 1;
   
         //string host = "Nebula.local";
-        int width = 45, height = 45, DMXchannels = 64;
+        int width = 66, height = 24, DMXchannels = 12;
 
         bool send = 0;
   
