@@ -72,7 +72,7 @@ class ofApp : public ofBaseApp {
     void exit();
     
         //ofFbo fbo, fboTour;
-        ofPixels pixels, pixTour, PWMPix, BrightPix;
+        ofPixels pixels, pixOrb;
     
         //ofxSyphonClient mClient, tClient;
   
@@ -80,7 +80,7 @@ class ofApp : public ofBaseApp {
         ofxOscSender sender;
         ofxOscReceiver receiver;
   
-        ofBuffer imgAsBuffer, NetBuffer, PWMBuffer, BrightBuffer;
+        ofBuffer imgAsBuffer, NetBuffer;
   
         ofImage img, PWMimg, Brightimg;
         unsigned char * Brights, * DMX, * NET;
@@ -88,14 +88,13 @@ class ofApp : public ofBaseApp {
         int playing = 1;
   
         //string host = "Nebula.local";
-        int width = 45, height = 45, DMXchannels = 64;
+        int width = 66, height = 22;
 
         bool send = 0;
   
         void onSerialBuffer(const ofx::IO::SerialBufferEventArgs& args);
         void onSerialError(const ofx::IO::SerialBufferErrorEventArgs& args);
         void sendLine(int i);
-        void sendDMX();
         void setBrightness(int line, int brightness);
         void setDither(int line, int dither);
   

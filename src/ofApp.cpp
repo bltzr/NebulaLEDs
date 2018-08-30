@@ -4,7 +4,7 @@
 //--------------------------------------------------------------
 void ofApp::setup(){
 
-    ofSetWindowTitle("NebulaLEDs");
+    ofSetWindowTitle("Interlude");
 
     receiver.setup(PORTIN);
     ofLog() << "Opened OSC Receiver";
@@ -15,24 +15,27 @@ void ofApp::setup(){
     ofSetVerticalSync(true);
     ofSetFrameRate(60); // if vertical sync is off, we can go a bit fast... this caps the framerate at 60fps.
   
+    // Video player
     trame.setPixelFormat(OF_PIXELS_RGB);
-  
     //trame.load("bright.mov");
-    trame.load("/data/Nebula.mov");
+    trame.load("/data/Interlude.mov");
     ofLog() << "Loaded Mov";
-    trame.setLoopState(OF_LOOP_NORMAL);
+    trame.setLoopState(OF_LOOP_NONE);
   
-    if (send){
-      // open an outgoing connection to HOST:PORT
-      sender.setup(HOST, PORT);
-      ofLog() << "Opened OSC Sender";
-    }
-  
-
+    // Orb
+    pixOrb.allocate(20, 1, 3);
+    
+    // Network input
     NetBuffer.allocate(width*height*3);
     for (int i=0;i<width*height*3;i++) NetBuffer.getData()[i] = 0;
 
   
+    if (send){
+        // open an outgoing connection to HOST:PORT
+        sender.setup(HOST, PORT);
+        ofLog() << "Opened OSC Sender";
+    }
+    
     if(playing){
       trame.play();
       }
@@ -56,67 +59,63 @@ void ofApp::setup(){
     device2.setup();
     device3.setup();
     device4.setup();
-    
-    //ligne 1 : Fond - T1 - /l1 - nPixels = 565 - x = 0 - h = 13
-    //ligne 2 : Fond - T1 - /l2 - nPixels = 495 - x = 13 - h = 11
-    //ligne 3 : Fond - T2 - /l1 - nPixels = 565 - x = 24 - h = 13
-    //ligne 3 : Tour - T2 - /l2 - nPixels = 459 - x = 0 - h = Tour.width
+
     
     ledLine[0].dev = &device;
     ledLine[0].src = &pixels;
     ledLine[0].address = "/1";
-    ledLine[0].nbPix = 315;
+    ledLine[0].nbPix = 264;
     ledLine[0].offset = 0;
-    ledLine[0].size = 7;
-    ledLine[0].Xsize = 45;
+    ledLine[0].size = 4;
+    ledLine[0].Xsize = 66;
     
-    ledLine[1].dev = &device;
+    ledLine[1].dev = &device3;
     ledLine[1].src = &pixels;
-    ledLine[1].address = "/2";
-    ledLine[1].nbPix = 250;
-    ledLine[1].offset = 7;
-    ledLine[1].size = 6;
-    ledLine[1].Xsize = 45;
+    ledLine[1].address = "/1";
+    ledLine[1].nbPix = 264;
+    ledLine[1].offset = 4;
+    ledLine[1].size = 4;
+    ledLine[1].Xsize = 66;
 
     ledLine[2].dev = &device2;
     ledLine[2].src = &pixels;
-    ledLine[2].address = "/1";
-    ledLine[2].nbPix = 270;
-    ledLine[2].offset = 13;
-    ledLine[2].size = 6;
-    ledLine[2].Xsize = 45;
+    ledLine[2].address = "/2";
+    ledLine[2].nbPix = 264;
+    ledLine[2].offset = 8;
+    ledLine[2].size = 4;
+    ledLine[2].Xsize = 66;
 
-    ledLine[3].dev = &device2;
+    ledLine[3].dev = &device;
     ledLine[3].src = &pixels;
     ledLine[3].address = "/2";
-    ledLine[3].nbPix = 225;
-    ledLine[3].offset = 19;
-    ledLine[3].size = 5;
-    ledLine[3].Xsize = 45;
+    ledLine[3].nbPix = 264;
+    ledLine[3].offset = 12;
+    ledLine[3].size = 4;
+    ledLine[3].Xsize = 66;
     
     ledLine[4].dev = &device3;
     ledLine[4].src = &pixels;
-    ledLine[4].address = "/1";
-    ledLine[4].nbPix = 250;
-    ledLine[4].offset = 24;
-    ledLine[4].size = 6;
-    ledLine[4].Xsize = 45;
+    ledLine[4].address = "/2";
+    ledLine[4].nbPix = 264;
+    ledLine[4].offset = 16;
+    ledLine[4].size = 4;
+    ledLine[4].Xsize = 66;
     
-    ledLine[5].dev = &device3;
+    ledLine[5].dev = &device2;
     ledLine[5].src = &pixels;
-    ledLine[5].address = "/2";
-    ledLine[5].nbPix = 315;
-    ledLine[5].offset = 30;
-    ledLine[5].size = 7;
-    ledLine[5].Xsize = 45;
+    ledLine[5].address = "/1";
+    ledLine[5].nbPix = 81;
+    ledLine[5].offset = 20;
+    ledLine[5].size = 2;
+    ledLine[5].Xsize = 66;
     
     ledLine[6].dev = &device4;
-    ledLine[6].src = &pixels;
+    ledLine[6].src = &pixOrb;
     ledLine[6].address = "/1";
-    ledLine[6].nbPix = 191;
-    ledLine[6].offset = 37;
-    ledLine[6].size = 5;
-    ledLine[6].Xsize = 45;
+    ledLine[6].nbPix = 20;
+    ledLine[6].offset = 0;
+    ledLine[6].size = 1;
+    ledLine[6].Xsize = 20;
 
 }
 
@@ -124,130 +123,96 @@ void ofApp::setup(){
 void ofApp::update(){
 
 
+    // OSC STUFF:
     while(receiver.hasWaitingMessages()){
         // get the next message
         ofxOscMessage m;
         receiver.getNextMessage(m);
       
-        if(m.getAddress() == "/play"){
-          ofLog() << "play" << m.getArgAsInt32(0);
-          if(m.getArgAsBool(0)){trame.play(); playing = 1;}
-          else if(!m.getArgAsBool(0)){trame.stop(); playing = 0; for (int i=0;i<width*height*3;i++) NetBuffer.getData()[i] = 0;}
-        }
-      
-      if(m.getAddress() == "/pause"){
-        ofLog() << "pause" << m.getArgAsInt32(0);
-        if(m.getArgAsBool(0)){trame.setPaused(1);}
-        
-        else if(!m.getArgAsBool(0)){trame.setPaused(1);}
-      }
-      
-      if(m.getAddress() == "/position"){
-        ofLog() << "position" << m.getArgAsFloat(0);
-        trame.setPosition(m.getArgAsFloat(0));
-   
-      }
-      
-      if(m.getAddress() == "/speed"){
-        ofLog() << "speed" << m.getArgAsFloat(0);
-        trame.setSpeed(m.getArgAsFloat(0));
-        
-      }
-      
-      else if(m.getAddress() == "/image"){
-        if (!playing){
-            //NetBuffer.clear();
-            NetBuffer = m.getArgAsBlob(0);
-            /*
-            NET = (unsigned char *)NetBuffer.getData();
-            for(int i = 0;i < 64; i++) std::cerr << (int)NET[i] << " ";
-            std::cerr << std::endl;
-            ofLog() << "image size: " << NetBuffer.size();
-            */
+          if(m.getAddress() == "/play"){
+            ofLog() << "play" << m.getArgAsInt32(0);
+            if(m.getArgAsBool(0)){trame.play(); playing = 1;}
+            else if(!m.getArgAsBool(0)){trame.stop(); playing = 0; for (int i=0;i<width*height*3;i++) NetBuffer.getData()[i] = 0;}
           }
-      }
-
       
+          else if(m.getAddress() == "/pause"){
+            ofLog() << "pause" << m.getArgAsInt32(0);
+            if(m.getArgAsBool(0)){trame.setPaused(1);}
+            
+            else if(!m.getArgAsBool(0)){trame.setPaused(1);}
+          }
         
-
-        /*
-          else if(m.getAddress() == "/b"){
-              //ofLog() << "b" << m.getArgAsInt32(0);
-              for (int i=0; i<6; i++){
-                  setBrightness(i, m.getArgAsInt32(0));
+          else if(m.getAddress() == "/stop"){
+              ofLog() << "stop" << m.getArgAsInt32(0);
+              trame.stop();
+          }
+        
+          else if(m.getAddress() == "/position"){
+            ofLog() << "position" << m.getArgAsFloat(0);
+            trame.setPosition(m.getArgAsFloat(0));
+       
+          }
+        
+          else if(m.getAddress() == "/speed"){
+            ofLog() << "speed" << m.getArgAsFloat(0);
+            trame.setSpeed(m.getArgAsFloat(0));
+            
+          }
+        
+          else if(m.getAddress() == "/image"){
+            if (!playing){
+                //NetBuffer.clear();
+                NetBuffer = m.getArgAsBlob(0);
+                /*
+                NET = (unsigned char *)NetBuffer.getData();
+                for(int i = 0;i < 64; i++) std::cerr << (int)NET[i] << " ";
+                std::cerr << std::endl;
+                ofLog() << "image size: " << NetBuffer.size();
+                */
               }
           }
         
-          else if(m.getAddress() == "/t"){
-              //ofLog() << "t" << m.getArgAsInt32(0);
-              setBrightness(6, m.getArgAsInt32(0));
-          }
-        
-          else if(m.getAddress() == "/d"){
+          else if(m.getAddress() == "/bright"){
               for (int i=0; i<6; i++){
                   setDither(i, m.getArgAsInt32(0));
               }
               //ofLog() << "d" << m.getArgAsInt32(0);
           }
         
-          else if(m.getAddress() == "/dt"){
+          else if(m.getAddress() == "/orb"){
               setDither(6, m.getArgAsInt32(0));
               //ofLog() << "d" << m.getArgAsInt32(0);
           }
-        */
           
         
     }
   
     trame.update();
+    
+    if (trame.getIsMovieDone()){
+        
+    }
       
   
     // get part of the image for the LEDs
       
     if(playing){
         pixels = trame.getPixels();
-        //ofLog() << "pixel format: " << pixels.getPixelFormat();
-        //LEDs = pixels.getData();
         }
 
     else{
-        pixels.setFromExternalPixels((unsigned char*)NetBuffer.getData(), 45, 45, 3);
-        // TODO: fill pixels with the Network Data
+        pixels.setFromExternalPixels((unsigned char*)NetBuffer.getData(), 66, 22, 3);
         }
+    
 
-  
-        
-    // get part of the image for the PWMs
-    //ofPixels PWMPix;
-    pixels.cropTo(PWMPix, 0, 42, 22, 1);
-    DMX = PWMPix.getData();
+    //  Fond brightness
+    for (int i=0; i<6; i++){
+      setBrightness(i, 31);
+    }
 
-    //ofLog() << "DMX: " << DMX << "_";
-    sendDMX();
-    
-    // get part of the image for the Brightnesses
-    //ofPixels BrightPix;
-    pixels.cropTo(BrightPix, 41, 42, 4, 1);
-    Brights = BrightPix.getData();
-    // /d - Fond dither
-    for (int i=0; i<6; i++){
-      setDither(i, (int)Brights[0]);
-    }
-    //ofLog() << "d" <<  (int)Brights[0];
-    
-    // /b - Fond brightness
-    for (int i=0; i<6; i++){
-      setBrightness(i, (int)Brights[3]/8);
-    }
-    //ofLog() << "b" << (int)Brights[3]/8;
-    
-    // /dt - Tour dither
-    setDither(6, Brights[6]);
-    //ofLog() << "dt" <<  (int)Brights[6];
-    
-    // /bt - Tour dither
-    setBrightness(6, (int)Brights[9]/8);
-    //ofLog() << "bt" << (int)Brights[9]/8;
+    //  Orb brightness
+    setBrightness(6, 31);
+
     
  
     if (send){
@@ -259,21 +224,6 @@ void ofApp::update(){
       m.addBlobArg(imgAsBuffer);
       sender.sendMessage(m);
       
-      
-      PWMBuffer.clear();
-      PWMBuffer.append((const char*)PWMPix.getData(), PWMPix.size());
-      ofxOscMessage n;
-      n.setAddress("/PWMs");
-      n.addBlobArg(PWMBuffer);
-      sender.sendMessage(n);
-      
-      BrightBuffer.clear();
-      BrightBuffer.append((const char*)BrightPix.getData(), BrightPix.size());
-      
-      ofxOscMessage o;
-      o.setAddress("/brights");
-      o.addBlobArg(PWMBuffer);
-      sender.sendMessage(o);
     }
    
     
@@ -346,41 +296,7 @@ void ofApp::setDither(int i, int dither) {
   
 }
 
-//--------------------------------------------------------------
-void ofApp::sendDMX() {
- 
-    ofBuffer imgAsBuffer;
-    imgAsBuffer.clear();
-    imgAsBuffer.append((const char*)PWMPix.getData(),64);
-  
-    //ofLog()<<(const char*)PWMPix.getData();
-  
-    ofxOscMessage m;
-    m.setAddress("/DMX");
-    m.addBlobArg(imgAsBuffer);
-  
-    // this code comes from ofxOscSender::sendMessage in ofxOscSender.cpp
-    static const int OUTPUT_BUFFER_SIZE = 16384;
-    char buffer[OUTPUT_BUFFER_SIZE];
-    osc::OutboundPacketStream p( buffer, OUTPUT_BUFFER_SIZE );
-  
-    // serialise the message
-  
-    p << osc::BeginBundleImmediate;
-    appendMessage( m, p );
-    p << osc::EndBundle;
-  
-    ofx::IO::ByteBuffer toEncode(p.Data(),p.Size());
-  
-    try {
-      device4.dev.send(toEncode);
-    } catch ( serial::SerialException e) {
-      ofLogError("sendLine") << "failed to send data : " << e.what();
-      device4.setup();
-    }
-  
-  
-}
+
 
 //--------------------------------------------------------------
 void ofApp::sendLine(int i) {
@@ -431,7 +347,7 @@ void ofApp::draw(){
 
     
     //trame.play();
-    //trame.draw(20, 20, 450, 450);
+    trame.draw(20, 20, 450, 450);
 
   
     for (int i=0; i<6; i++) {
@@ -439,17 +355,15 @@ void ofApp::draw(){
         img.setFromPixels(ledLine[i].pixelCrop);
         img.draw(500, ledLine[i].offset*15, 450, ledLine[i].size*10);
     }
-    
+    /*
     ofImage img;
     img.setFromPixels(ledLine[6].pixelCrop);
     img.draw(500, 600, 450, ledLine[6].size*30);
-  
+  */
 
     img.setFromPixels(pixels);
     img.draw(20, 20, 450, 450);
   
-    Brightimg.setFromPixels(BrightPix);
-    Brightimg.draw(500, 600, 450, 50);
   
 #endif
 
@@ -462,39 +376,28 @@ void ofApp::exit(){
   playing = 0;
   for (int i=0;i<width*height*3;i++) NetBuffer.getData()[i] = 0;
   
-  pixels.setFromExternalPixels((unsigned char*)NetBuffer.getData(), 45, 45, 3);
+  pixels.setFromExternalPixels((unsigned char*)NetBuffer.getData(), 66, 22, 3);
   // TODO: fill pixels with the Network Data
 
 
-  // get part of the image for the PWMs
-  //ofPixels PWMPix;
-  pixels.cropTo(PWMPix, 0, 42, 22, 1);
-  DMX = PWMPix.getData();
-  //ofLog() << "DMX: " << DMX << "_";
-  sendDMX();
-  
-  // get part of the image for the Brightnesses
-  //ofPixels BrightPix;
-  pixels.cropTo(BrightPix, 41, 42, 4, 1);
-  Brights = BrightPix.getData();
-  // /d - Fond dither
+  // Fond dither
   for (int i=0; i<6; i++){
-    setDither(i, (int)Brights[0]);
+    setDither(i, 0);
   }
   //ofLog() << "d" <<  (int)Brights[0];
   
-  // /b - Fond brightness
+  //  Fond brightness
   for (int i=0; i<6; i++){
-    setBrightness(i, (int)Brights[3]/8);
+    setBrightness(i, 0);
   }
   //ofLog() << "b" << (int)Brights[3]/8;
   
-  // /dt - Tour dither
-  setDither(6, Brights[6]);
+  // Orb dither
+  setDither(6, 0);
   //ofLog() << "dt" <<  (int)Brights[6];
   
-  // /bt - Tour dither
-  setBrightness(6, (int)Brights[9]/8);
+  // orb brightness
+  setBrightness(6, 0);
   //ofLog() << "bt" << (int)Brights[9]/8;
 
   
