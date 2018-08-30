@@ -1,4 +1,3 @@
 ofxIO
 ofxOsc
 ofxSerial
-ofxSyphon

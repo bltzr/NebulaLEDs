@@ -1,10 +1,12 @@
 #pragma once
 
 #include "ofMain.h"
-#include "ofxSyphon.h"
+//#include "ofxSyphon.h"
 #include "ofxSerial.h"
 #include "ofxOsc.h"
-#define PORT 66666
+#define HOST "Nebula.local"
+#define PORT 12345
+#define PORTIN 98765
 #define NUM_MSG_STRINGS 20
 
 
@@ -67,25 +69,40 @@ class ofApp : public ofBaseApp {
 		void setup();
 		void update();
 		void draw();
+    void exit();
     
-    ofFbo fbo ; //, fboTour;
-    ofPixels pixels ; //, pixTour;
+        //ofFbo fbo, fboTour;
+        ofPixels pixels, pixOrb;
     
-        ofxSyphonClient mClient ; //, tClient;
-    
+        //ofxSyphonClient mClient, tClient;
+  
+        ofVideoPlayer trame;
+        ofxOscSender sender;
         ofxOscReceiver receiver;
-    
+  
+        ofBuffer imgAsBuffer, NetBuffer;
+  
+        ofImage img, PWMimg, Brightimg;
+        unsigned char * Brights, * DMX, * NET;
+  
+        int playing = 1;
+  
+        //string host = "Nebula.local";
+        int width = 66, height = 22;
+
+        bool send = 0;
+  
         void onSerialBuffer(const ofx::IO::SerialBufferEventArgs& args);
         void onSerialError(const ofx::IO::SerialBufferErrorEventArgs& args);
         void sendLine(int i);
         void setBrightness(int line, int brightness);
         void setDither(int line, int dither);
   
-    Teensy device, device2, device3 ; //, device4;
+        Teensy device, device2, device3, device4;
     
         std::vector<SerialMessage> serialMessages;
     
-        LedLine ledLine[6];
+        LedLine ledLine[7];
     
         int current_msg_string;
         string msg_strings[NUM_MSG_STRINGS];
