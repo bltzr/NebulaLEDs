@@ -138,25 +138,17 @@ void ofApp::update(){
           else if(m.getAddress() == "/pause"){
             ofLog() << "pause" << m.getArgAsInt32(0);
             if(m.getArgAsBool(0)){trame.setPaused(1);}
-            
             else if(!m.getArgAsBool(0)){trame.setPaused(1);}
-          }
-        
-          else if(m.getAddress() == "/stop"){
-              ofLog() << "stop" << m.getArgAsInt32(0);
-              trame.stop();
           }
         
           else if(m.getAddress() == "/position"){
             ofLog() << "position" << m.getArgAsFloat(0);
             trame.setPosition(m.getArgAsFloat(0));
-       
           }
         
           else if(m.getAddress() == "/speed"){
             ofLog() << "speed" << m.getArgAsFloat(0);
             trame.setSpeed(m.getArgAsFloat(0));
-            
           }
         
           else if(m.getAddress() == "/image"){
