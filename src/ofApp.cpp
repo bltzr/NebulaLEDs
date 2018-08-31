@@ -23,7 +23,7 @@ void ofApp::setup(){
     trame.setLoopState(OF_LOOP_NONE);
   
     // Orb
-    pixOrb.allocate(20, 1, 3);
+    pixOrb.allocate(OrbSize, 1, 3);
     
     // Network input
     NetBuffer.allocate(width*height*3);
@@ -67,7 +67,7 @@ void ofApp::setup(){
     ledLine[0].nbPix = 264;
     ledLine[0].offset = 0;
     ledLine[0].size = 4;
-    ledLine[0].Xsize = 66;
+    ledLine[0].Xsize = width;
     
     ledLine[1].dev = &device3;
     ledLine[1].src = &pixels;
@@ -75,7 +75,7 @@ void ofApp::setup(){
     ledLine[1].nbPix = 264;
     ledLine[1].offset = 4;
     ledLine[1].size = 4;
-    ledLine[1].Xsize = 66;
+    ledLine[1].Xsize = width;
 
     ledLine[2].dev = &device2;
     ledLine[2].src = &pixels;
@@ -83,7 +83,7 @@ void ofApp::setup(){
     ledLine[2].nbPix = 264;
     ledLine[2].offset = 8;
     ledLine[2].size = 4;
-    ledLine[2].Xsize = 66;
+    ledLine[2].Xsize = width;
 
     ledLine[3].dev = &device;
     ledLine[3].src = &pixels;
@@ -91,7 +91,7 @@ void ofApp::setup(){
     ledLine[3].nbPix = 264;
     ledLine[3].offset = 12;
     ledLine[3].size = 4;
-    ledLine[3].Xsize = 66;
+    ledLine[3].Xsize = width;
     
     ledLine[4].dev = &device3;
     ledLine[4].src = &pixels;
@@ -99,7 +99,7 @@ void ofApp::setup(){
     ledLine[4].nbPix = 264;
     ledLine[4].offset = 16;
     ledLine[4].size = 4;
-    ledLine[4].Xsize = 66;
+    ledLine[4].Xsize = width;
     
     ledLine[5].dev = &device2;
     ledLine[5].src = &pixels;
@@ -107,15 +107,15 @@ void ofApp::setup(){
     ledLine[5].nbPix = 81;
     ledLine[5].offset = 20;
     ledLine[5].size = 2;
-    ledLine[5].Xsize = 66;
+    ledLine[5].Xsize = width;
     
     ledLine[6].dev = &device4;
     ledLine[6].src = &pixOrb;
     ledLine[6].address = "/1";
-    ledLine[6].nbPix = 20;
+    ledLine[6].nbPix = OrbSize;
     ledLine[6].offset = 0;
     ledLine[6].size = 1;
-    ledLine[6].Xsize = 20;
+    ledLine[6].Xsize = OrbSize;
 
 }
 
@@ -153,14 +153,7 @@ void ofApp::update(){
         
           else if(m.getAddress() == "/image"){
             if (!playing){
-                //NetBuffer.clear();
                 NetBuffer = m.getArgAsBlob(0);
-                /*
-                NET = (unsigned char *)NetBuffer.getData();
-                for(int i = 0;i < 64; i++) std::cerr << (int)NET[i] << " ";
-                std::cerr << std::endl;
-                ofLog() << "image size: " << NetBuffer.size();
-                */
               }
           }
         
@@ -326,7 +319,11 @@ void ofApp::sendLine(int i) {
     }
 }
 
-
+void ofApp::makeOrb(){
+    for (int i=0; i<OrbSize; ++i){
+        
+    }
+}
 
 //-------------------------------------------------------------
 void ofApp::draw(){

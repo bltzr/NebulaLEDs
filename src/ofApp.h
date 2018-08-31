@@ -89,6 +89,7 @@ class ofApp : public ofBaseApp {
   
         //string host = "Nebula.local";
         int width = 66, height = 22;
+        int OrbSize = 20;
 
         bool send = 0;
   
@@ -97,6 +98,7 @@ class ofApp : public ofBaseApp {
         void sendLine(int i);
         void setBrightness(int line, int brightness);
         void setDither(int line, int dither);
+        void makeOrb();
   
         Teensy device, device2, device3, device4;
     
