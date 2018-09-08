@@ -4,7 +4,7 @@
 //#include "ofxSyphon.h"
 #include "ofxSerial.h"
 #include "ofxOsc.h"
-#define HOST "Nebula.local"
+#define HOST "Nanaui.local"
 #define PORT 12345
 #define PORTIN 98765
 #define NUM_MSG_STRINGS 20
@@ -99,6 +99,19 @@ class ofApp : public ofBaseApp {
         void setBrightness(int line, int brightness);
         void setDither(int line, int dither);
         void makeOrb();
+    
+        std::vector<ofx::IO::SerialDeviceInfo> devicesInfo = ofx::IO::SerialDeviceUtils::listDevices();
+        std::string portName(int SN)
+        {
+            for (const auto& devInfo : devicesInfo){
+                //cout << "for " << devInfo.getHardwareId() << ": " << (std::to_string(SN)) << " -> find: " << devInfo.getHardwareId().find((std::to_string(SN))) << endl;
+                if ((devInfo.getHardwareId().find((std::to_string(SN))))<60){
+                    cout << "found: " << devInfo.getPort() << endl;
+                    return devInfo.getPort();
+                }
+            }
+            return "";
+        }
   
         Teensy device, device2, device3, device4;
     

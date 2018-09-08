@@ -43,16 +43,15 @@ void ofApp::setup(){
     
     // setup Serial
     
-    std::vector<ofx::IO::SerialDeviceInfo> devicesInfo = ofx::IO::SerialDeviceUtils::listDevices();
+    //std::vector<ofx::IO::SerialDeviceInfo> devicesInfo = ofx::IO::SerialDeviceUtils::listDevices();
     
-    //ofLogNotice("ofApp::setup") << "Connected Devices: ";
-
-
-    device.name = "/dev/cu.usbmodem1369841";
-    device2.name = "/dev/cu.usbmodem1455771";
-    device3.name = "/dev/cu.usbmodem1383111";
-    //device4.name = "/dev/cu.usbmodem1366241";
-    device4.name = "/dev/cu.usbmodem1365391";
+    ofLogNotice("ofApp::setup") << "Connected Devices: ";
+    for (auto d : devicesInfo) ofLogNotice("ofApp::setup") << d;
+    
+    device.name = portName(3767280); // "/dev/cu.usbmodem1369841";
+    device2.name = portName(397226); //"/dev/cu.usbmodem1455771";
+    device3.name = portName(390221); //"/dev/cu.usbmodem1383111";
+    device4.name = portName(397232); //"/dev/cu.usbmodem1365391";
   
 
     device.setup();
