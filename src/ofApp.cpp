@@ -9,7 +9,6 @@ void ofApp::setup(){
     receiver.setup(PORTIN);
     ofLog() << "Opened OSC Receiver";
   
-    
     // display
     ofBackground(0,0,0);
     ofSetVerticalSync(true);
@@ -31,11 +30,6 @@ void ofApp::setup(){
     // Network input
     NetBuffer.allocate(width*height*3);
     for (int i=0;i<width*height*3;i++) NetBuffer.getData()[i] = 0;
-
-    
-    if(playing){
-      trame.play();
-      }
   
     
     // setup Serial
@@ -110,6 +104,10 @@ void ofApp::setup(){
     ledLine[6].offset = 0;
     ledLine[6].size = 1;
     ledLine[6].Xsize = OrbSize;
+    
+    for (int i=0; i<7; i++) {
+        ledLine[i].setup();
+    }
 
 }
 
@@ -206,17 +204,22 @@ void ofApp::update(){
 
 void ofApp::setOrbLum(){
     //  Orb brightness
-    setBrightness(6, 31);
-    setDither(6, 255);
+    int lum = int(orbLum * 1041.);
+    setBrightness(6, bright[lum]);
+    setDither(6, dither[lum]);
+    ofLogNotice("Orb - bright / dither: ") << bright[lum] << " / " << dither[lum] ;
 }
 
 void ofApp::setWallLum(){
     //  Wall brightness
+    int lum = int(wallLum * 1041.);
+    uint8_t br = uint8_t(bright[lum]);
+    uint8_t di = uint8_t(dither[lum]);
     for (int i=0; i<6; i++){
-        setBrightness(i, 31);
+        setBrightness(i, br);
     }
     for (int i=0; i<6; i++){
-        setDither(i, 255);
+        setDither(i, di);
     }
 }
 
@@ -343,7 +346,7 @@ void ofApp::orbBreathe(){
     orbLum+=orbDir*orbInc;
     if (orbLum<=orbMin) {orbLum=orbMin; orbDir=1.;}
     else if (orbLum>=orbMax) {orbLum=orbMax; orbDir=-1.;}
-    ofLogNotice("orb luminosity: ") << orbLum;
+    //ofLogNotice("orb luminosity: ") << orbLum;
 }
 
 //-------------------------------------------------------------
@@ -357,7 +360,7 @@ void ofApp::draw(){
 
     
     //trame.play();
-    trame.draw(20, 20, 450, 450);
+    //pixels.draw(20, 20, 450, 450);
 
   
     for (int i=0; i<6; i++) {
@@ -366,14 +369,13 @@ void ofApp::draw(){
         img.draw(500, ledLine[i].offset*15, 450, ledLine[i].size*10);
     }
     
-    ofImage img;
-    img.setFromPixels(ledLine[6].pixelCrop);
-    img.draw(500, 400, 450, ledLine[6].size*30);
-  
+    ofImage imgOrb;
+    imgOrb.setFromPixels(ledLine[6].pixelCrop);
+    imgOrb.draw(500, 400, 450, ledLine[6].size*30);
 
-    img.setFromPixels(pixels);
-    img.draw(20, 20, 450, 450);
-  
+    ofImage imgWall;
+    imgWall.setFromPixels(pixels);
+    imgWall.draw(20, 20, 450, 450);
   
 #endif
 
