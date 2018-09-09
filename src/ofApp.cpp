@@ -182,12 +182,10 @@ void ofApp::update(){
     if(playing){
         if (waiting){
             orbBreathe();
-            
             sendLine(6);
         } else {
             trame.update();
             pixels = trame.getPixels();
-            
             for (int i=0; i<6; i++) {
                 sendLine(i);
             }
@@ -199,22 +197,49 @@ void ofApp::update(){
             sendLine(i);
         }
     }
-    
 }
 
-void ofApp::setOrbLum(){
-    //  Orb brightness
-    int lum = int(orbLum * 1041.);
+void ofApp::testSensor(){
+    if (sensorValue >= 8 && waiting) {
+        trame.play();
+        waiting=false;
+        wallLum=1.;
+        setWallLum();
+    } else if ( sensorValue < 8 && !waiting ){
+        trame.stop();
+        waiting=true;
+        wallLum=0.;
+        setWallLum();
+    }
+}
+
+void ofApp::orbBreathe(){
+    orbLum+=orbDir*orbInc;
+    if (orbLum<=orbMin) {orbLum=orbMin; orbDir=1.;}
+    else if (orbLum>=orbMax) {orbLum=orbMax; orbDir=-1.;}
+    size_t lum = size_t(orbLum * 1041.);
     setBrightness(6, bright[lum]);
     setDither(6, dither[lum]);
-    ofLogNotice("Orb - bright / dither: ") << bright[lum] << " / " << dither[lum] ;
+    //ofLogNotice("orb luminosity: ") << orbLum << " -> " << lum;
+    //ofLogNotice("Orb - bright / dither: ") << int(bright[lum]) << " / " << int(dither[lum]) ;
+}
+
+
+void ofApp::makeOrb(){
+    for (int i=0; i<OrbSize; ++i){
+        pixOrb[i*3]  =orbColor.r;
+        pixOrb[i*3+1]=orbColor.g;
+        pixOrb[i*3+2]=orbColor.b;
+    }
 }
 
 void ofApp::setWallLum(){
     //  Wall brightness
     int lum = int(wallLum * 1041.);
-    uint8_t br = uint8_t(bright[lum]);
-    uint8_t di = uint8_t(dither[lum]);
+    uint8_t br = bright[lum];
+    uint8_t di = dither[lum];
+    ofLogNotice("Wall luminosity: ") << wallLum << " -> " << lum;
+    //ofLogNotice("Wall - bright / dither: ") << int(bright[lum]) << " / " << int(dither[lum]) ;
     for (int i=0; i<6; i++){
         setBrightness(i, br);
     }
@@ -223,14 +248,14 @@ void ofApp::setWallLum(){
     }
 }
 
-void ofApp::setBrightness(int i, int brightness) {
+void ofApp::setBrightness(int i, uint8_t brightness) {
 
     // check for waiting messages
     
         LedLine line = ledLine[i];
         ofxOscMessage n;
         n.setAddress(line.address);
-        n.addIntArg(brightness);
+        n.addIntArg(int(brightness));
         
         // this code come from ofxOscSender::sendMessage in ofxOscSender.cpp
         static const int OUTPUT_BUFFER_SIZE = 16384;
@@ -251,17 +276,16 @@ void ofApp::setBrightness(int i, int brightness) {
             ofLogError("sendLine") << "failed to send data : " << e.what();
             line.dev->setup();
         }
-
 }
 
-void ofApp::setDither(int i, int dither) {
+void ofApp::setDither(int i, uint8_t dither) {
   
         // check for waiting messages
         
         LedLine line = ledLine[i];
         ofxOscMessage n;
         n.setAddress("/b");
-        n.addIntArg(dither);
+        n.addIntArg(int(dither));
         
         // this code come from ofxOscSender::sendMessage in ofxOscSender.cpp
         static const int OUTPUT_BUFFER_SIZE = 16384;
@@ -323,31 +347,8 @@ void ofApp::sendLine(int i) {
     }
 }
 
-void ofApp::makeOrb(){
-    for (int i=0; i<OrbSize; ++i){
-        pixOrb[i*3]  =orbColor.r;
-        pixOrb[i*3+1]=orbColor.g;
-        pixOrb[i*3+2]=orbColor.b;
-    }
-}
 
-void ofApp::testSensor(){
-    if (sensorValue > 8) {
-        trame.play();
-        waiting=false;
-    } else {
-        trame.stop();
-        waiting=true;
-    }
-    
-}
 
-void ofApp::orbBreathe(){
-    orbLum+=orbDir*orbInc;
-    if (orbLum<=orbMin) {orbLum=orbMin; orbDir=1.;}
-    else if (orbLum>=orbMax) {orbLum=orbMax; orbDir=-1.;}
-    //ofLogNotice("orb luminosity: ") << orbLum;
-}
 
 //-------------------------------------------------------------
 void ofApp::draw(){
