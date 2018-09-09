@@ -4,8 +4,6 @@
 //#include "ofxSyphon.h"
 #include "ofxSerial.h"
 #include "ofxOsc.h"
-#define HOST "Nanaui.local"
-#define PORT 12345
 #define PORTIN 98765
 #define NUM_MSG_STRINGS 20
 
@@ -71,13 +69,10 @@ class ofApp : public ofBaseApp {
 		void draw();
     void exit();
     
-        //ofFbo fbo, fboTour;
         ofPixels pixels, pixOrb;
     
-        //ofxSyphonClient mClient, tClient;
   
         ofVideoPlayer trame;
-        ofxOscSender sender;
         ofxOscReceiver receiver;
   
         ofBuffer imgAsBuffer, NetBuffer;
@@ -87,11 +82,10 @@ class ofApp : public ofBaseApp {
   
         int playing = 1;
   
-        //string host = "Nebula.local";
         int width = 66, height = 22;
         int OrbSize = 20;
-
-        bool send = 0;
+    
+        ofColor orbColor {255, 255, 255, 255};
   
         void onSerialBuffer(const ofx::IO::SerialBufferEventArgs& args);
         void onSerialError(const ofx::IO::SerialBufferErrorEventArgs& args);

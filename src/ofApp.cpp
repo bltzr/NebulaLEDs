@@ -13,7 +13,8 @@ void ofApp::setup(){
     // display
     ofBackground(0,0,0);
     ofSetVerticalSync(true);
-    ofSetFrameRate(60); // if vertical sync is off, we can go a bit fast... this caps the framerate at 60fps.
+    ofSetFrameRate(30);
+    
   
     // Video player
     trame.setPixelFormat(OF_PIXELS_RGB);
@@ -24,17 +25,12 @@ void ofApp::setup(){
   
     // Orb
     pixOrb.allocate(OrbSize, 1, 3);
+    makeOrb();
     
     // Network input
     NetBuffer.allocate(width*height*3);
     for (int i=0;i<width*height*3;i++) NetBuffer.getData()[i] = 0;
 
-  
-    if (send){
-        // open an outgoing connection to HOST:PORT
-        sender.setup(HOST, PORT);
-        ofLog() << "Opened OSC Sender";
-    }
     
     if(playing){
       trame.play();
@@ -42,8 +38,6 @@ void ofApp::setup(){
   
     
     // setup Serial
-    
-    //std::vector<ofx::IO::SerialDeviceInfo> devicesInfo = ofx::IO::SerialDeviceUtils::listDevices();
     
     ofLogNotice("ofApp::setup") << "Connected Devices: ";
     for (auto d : devicesInfo) ofLogNotice("ofApp::setup") << d;
@@ -167,6 +161,14 @@ void ofApp::update(){
               setDither(6, m.getArgAsInt32(0));
               //ofLog() << "d" << m.getArgAsInt32(0);
           }
+        
+          else if(m.getAddress() == "/orbColor"){
+              orbColor.r = m.getArgAsInt32(0);
+              orbColor.g = m.getArgAsInt32(1);
+              orbColor.b = m.getArgAsInt32(2);
+              makeOrb();
+              //ofLog() << "d" << m.getArgAsInt32(0);
+          }
           
         
     }
@@ -197,18 +199,6 @@ void ofApp::update(){
     //  Orb brightness
     setBrightness(6, 31);
 
-    
- 
-    if (send){
-      
-      imgAsBuffer.clear();
-      imgAsBuffer.append((const char*)pixels.getData(),pixels.size());
-      ofxOscMessage m;
-      m.setAddress("/image");
-      m.addBlobArg(imgAsBuffer);
-      sender.sendMessage(m);
-      
-    }
    
     
 
@@ -320,7 +310,9 @@ void ofApp::sendLine(int i) {
 
 void ofApp::makeOrb(){
     for (int i=0; i<OrbSize; ++i){
-        
+        pixOrb[i*3]  =orbColor.r;
+        pixOrb[i*3+1]=orbColor.g;
+        pixOrb[i*3+2]=orbColor.b;
     }
 }
 
@@ -343,11 +335,11 @@ void ofApp::draw(){
         img.setFromPixels(ledLine[i].pixelCrop);
         img.draw(500, ledLine[i].offset*15, 450, ledLine[i].size*10);
     }
-    /*
+    
     ofImage img;
     img.setFromPixels(ledLine[6].pixelCrop);
-    img.draw(500, 600, 450, ledLine[6].size*30);
-  */
+    img.draw(500, 400, 450, ledLine[6].size*30);
+  
 
     img.setFromPixels(pixels);
     img.draw(20, 20, 450, 450);
