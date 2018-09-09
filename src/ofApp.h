@@ -63,63 +63,53 @@ public:
 
 class ofApp : public ofBaseApp {
 
-	public:
-		void setup();
-		void update();
-		void draw();
-    void exit();
-    
-        ofPixels pixels, pixOrb;
-    
-  
-        ofVideoPlayer trame;
-        ofxOscReceiver receiver;
-  
-        ofBuffer imgAsBuffer, NetBuffer;
-  
-        ofImage img, PWMimg, Brightimg;
-        unsigned char * Brights, * DMX, * NET;
-  
-        int playing = 1;
-  
-        int width = 66, height = 22;
-        int OrbSize = 20;
-    
-        ofColor orbColor {255, 255, 255, 255};
-  
-        void onSerialBuffer(const ofx::IO::SerialBufferEventArgs& args);
-        void onSerialError(const ofx::IO::SerialBufferErrorEventArgs& args);
-        void sendLine(int i);
-        void setBrightness(int line, int brightness);
-        void setDither(int line, int dither);
-        void makeOrb();
-    
-        std::vector<ofx::IO::SerialDeviceInfo> devicesInfo = ofx::IO::SerialDeviceUtils::listDevices();
-        std::string portName(int SN)
-        {
-            for (const auto& devInfo : devicesInfo){
-                //cout << "for " << devInfo.getHardwareId() << ": " << (std::to_string(SN)) << " -> find: " << devInfo.getHardwareId().find((std::to_string(SN))) << endl;
-                if ((devInfo.getHardwareId().find((std::to_string(SN))))<60){
-                    cout << "found: " << devInfo.getPort() << endl;
-                    return devInfo.getPort();
-                }
-            }
-            return "";
-        }
-  
-        Teensy device, device2, device3, device4;
-    
-        std::vector<SerialMessage> serialMessages;
-    
-        LedLine ledLine[7];
-    
-        int current_msg_string;
-        string msg_strings[NUM_MSG_STRINGS];
-        float timers[NUM_MSG_STRINGS];
-    
-    
-    private:
-        void appendMessage( ofxOscMessage& message, osc::OutboundPacketStream& p );
+public:
+    void setup();
+    void update();
+    void draw();
+void exit();
+
+    ofPixels pixels, pixOrb;
+
+
+    ofVideoPlayer trame;
+    ofxOscReceiver receiver;
+
+    ofBuffer imgAsBuffer, NetBuffer;
+
+    ofImage img, PWMimg, Brightimg;
+    unsigned char * Brights, * DMX, * NET;
+
+    int playing = 1;
+
+    int width = 66, height = 22;
+    int OrbSize = 20;
+
+    ofColor orbColor {255, 255, 255, 255};
+
+    void onSerialBuffer(const ofx::IO::SerialBufferEventArgs& args);
+    void onSerialError(const ofx::IO::SerialBufferErrorEventArgs& args);
+    void sendLine(int i);
+    void setBrightness(int line, int brightness);
+    void setDither(int line, int dither);
+    void makeOrb();
+
+    std::vector<ofx::IO::SerialDeviceInfo> devicesInfo = ofx::IO::SerialDeviceUtils::listDevices();
+    std::string portName(int SN);
+
+    Teensy device, device2, device3, device4;
+
+    std::vector<SerialMessage> serialMessages;
+
+    LedLine ledLine[7];
+
+    int current_msg_string;
+    string msg_strings[NUM_MSG_STRINGS];
+    float timers[NUM_MSG_STRINGS];
+
+
+private:
+    void appendMessage( ofxOscMessage& message, osc::OutboundPacketStream& p );
 
 
 

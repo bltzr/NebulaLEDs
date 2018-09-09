@@ -167,7 +167,6 @@ void ofApp::update(){
               orbColor.g = m.getArgAsInt32(1);
               orbColor.b = m.getArgAsInt32(2);
               makeOrb();
-              //ofLog() << "d" << m.getArgAsInt32(0);
           }
           
         
@@ -390,6 +389,17 @@ void ofApp::exit(){
 
 //-------------------------------------------------------------
 //-------------------------------------------------------------
+
+std::string ofApp::portName(int SN)
+{
+    for (const auto& devInfo : devicesInfo){
+        if ((devInfo.getHardwareId().find((std::to_string(SN))))<60){
+            cout << "found: " << devInfo.getPort() << endl;
+            return devInfo.getPort();
+        }
+    }
+    return "";
+}
 
 
 void ofApp::onSerialBuffer(const ofx::IO::SerialBufferEventArgs& args)
