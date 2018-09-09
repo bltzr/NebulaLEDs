@@ -71,7 +71,6 @@ void exit();
 
     ofPixels pixels, pixOrb;
 
-
     ofVideoPlayer trame;
     ofxOscReceiver receiver;
 
@@ -80,10 +79,15 @@ void exit();
     ofImage img, PWMimg, Brightimg;
     unsigned char * Brights, * DMX, * NET;
 
-    int playing = 1;
+    bool playing {true};
+    bool waiting {true};
+    
+    float fps {30.};
 
-    int width = 66, height = 22;
-    int OrbSize = 20;
+    int width {66}, height {22};
+    int OrbSize {20};
+    
+    int sensorValue {0};
 
     ofColor orbColor {255, 255, 255, 255};
 
@@ -93,11 +97,24 @@ void exit();
     void setBrightness(int line, int brightness);
     void setDither(int line, int dither);
     void makeOrb();
+    
+    void setWallLum();
+    void setOrbLum();
+    
+    void testSensor();
+    void orbBreathe();
+    
+    float orbLum {0.}, wallLum {0.};
+    float orbInc {0.01}, wallInc {0.01};
+    float orbMin {0.2}, orbMax {1.};
+    float orbDir {1.};
 
     std::vector<ofx::IO::SerialDeviceInfo> devicesInfo = ofx::IO::SerialDeviceUtils::listDevices();
     std::string portName(int SN);
 
     Teensy device, device2, device3, device4;
+    
+    ofx::IO::BufferedSerialDevice sensor;
 
     std::vector<SerialMessage> serialMessages;
 

@@ -22,6 +22,7 @@ void ofApp::setup(){
     trame.load("/data/Interlude.mov");
     ofLog() << "Loaded Mov";
     trame.setLoopState(OF_LOOP_NONE);
+    pixels.allocate(width, height, 3);
   
     // Orb
     pixOrb.allocate(OrbSize, 1, 3);
@@ -122,89 +123,101 @@ void ofApp::update(){
         ofxOscMessage m;
         receiver.getNextMessage(m);
       
-          if(m.getAddress() == "/play"){
-            ofLog() << "play" << m.getArgAsInt32(0);
-            if(m.getArgAsBool(0)){trame.play(); playing = 1;}
-            else if(!m.getArgAsBool(0)){trame.stop(); playing = 0; for (int i=0;i<width*height*3;i++) NetBuffer.getData()[i] = 0;}
+        if(m.getAddress() == "/play"){
+          ofLog() << "play" << m.getArgAsInt32(0);
+          if(m.getArgAsBool(0)){ playing = 1;}
+          else if(!m.getArgAsBool(0)){
+              playing = 0;
+              for (int i=0;i<width*height*3;i++) NetBuffer.getData()[i] = 0;
           }
+        }
       
-          else if(m.getAddress() == "/pause"){
-            ofLog() << "pause" << m.getArgAsInt32(0);
-            if(m.getArgAsBool(0)){trame.setPaused(1);}
-            else if(!m.getArgAsBool(0)){trame.setPaused(1);}
-          }
+        else if(m.getAddress() == "/pause"){
+          ofLog() << "pause" << m.getArgAsInt32(0);
+          if(m.getArgAsBool(0)){trame.setPaused(1);}
+          else if(!m.getArgAsBool(0)){trame.setPaused(1);}
+        }
         
-          else if(m.getAddress() == "/position"){
-            ofLog() << "position" << m.getArgAsFloat(0);
-            trame.setPosition(m.getArgAsFloat(0));
-          }
+        else if(m.getAddress() == "/position"){
+          ofLog() << "position" << m.getArgAsFloat(0);
+          trame.setPosition(m.getArgAsFloat(0));
+        }
         
-          else if(m.getAddress() == "/speed"){
-            ofLog() << "speed" << m.getArgAsFloat(0);
-            trame.setSpeed(m.getArgAsFloat(0));
-          }
+        else if(m.getAddress() == "/speed"){
+          ofLog() << "speed" << m.getArgAsFloat(0);
+          trame.setSpeed(m.getArgAsFloat(0));
+        }
         
-          else if(m.getAddress() == "/image"){
+        else if(m.getAddress() == "/image"){
             if (!playing){
                 NetBuffer = m.getArgAsBlob(0);
-              }
-          }
+            }
+        }
         
-          else if(m.getAddress() == "/bright"){
-              for (int i=0; i<6; i++){
-                  setDither(i, m.getArgAsInt32(0));
-              }
-              //ofLog() << "d" << m.getArgAsInt32(0);
-          }
+        else if(m.getAddress() == "/wallLum"){
+            
+        }
         
-          else if(m.getAddress() == "/orb"){
-              setDither(6, m.getArgAsInt32(0));
-              //ofLog() << "d" << m.getArgAsInt32(0);
-          }
+        else if(m.getAddress() == "/orbLum"){
+            
+        }
         
-          else if(m.getAddress() == "/orbColor"){
-              orbColor.r = m.getArgAsInt32(0);
-              orbColor.g = m.getArgAsInt32(1);
-              orbColor.b = m.getArgAsInt32(2);
-              makeOrb();
-          }
-          
+        else if(m.getAddress() == "/orbPeriod"){
+            orbInc = fps / (m.getArgAsFloat(0) * 500.) ;
+        }
+        
+        else if(m.getAddress() == "/orbColor"){
+            orbColor.r = m.getArgAsInt32(0);
+            orbColor.g = m.getArgAsInt32(1);
+            orbColor.b = m.getArgAsInt32(2);
+            makeOrb();
+        }
+        
+        else if(m.getAddress() == "/sensor"){
+            sensorValue = m.getArgAsInt32(0);
+        }
         
     }
   
-    trame.update();
+    testSensor();
     
-    if (trame.getIsMovieDone()){
-        
-    }
-      
-  
-    // get part of the image for the LEDs
-      
     if(playing){
-        pixels = trame.getPixels();
+        if (waiting){
+            orbBreathe();
+            
+            sendLine(6);
+        } else {
+            trame.update();
+            pixels = trame.getPixels();
+            
+            for (int i=0; i<6; i++) {
+                sendLine(i);
+            }
+            
         }
-
-    else{
+    } else {
         pixels.setFromExternalPixels((unsigned char*)NetBuffer.getData(), 66, 22, 3);
+        for (int i=0; i<6; i++) {
+            sendLine(i);
         }
-    
-
-    //  Fond brightness
-    for (int i=0; i<6; i++){
-      setBrightness(i, 31);
     }
+    
+}
 
+void ofApp::setOrbLum(){
     //  Orb brightness
     setBrightness(6, 31);
+    setDither(6, 255);
+}
 
-   
-    
-
-    for (int i=0; i<7; i++) {
-        sendLine(i);
-        }
-
+void ofApp::setWallLum(){
+    //  Wall brightness
+    for (int i=0; i<6; i++){
+        setBrightness(i, 31);
+    }
+    for (int i=0; i<6; i++){
+        setDither(i, 255);
+    }
 }
 
 void ofApp::setBrightness(int i, int brightness) {
@@ -313,6 +326,24 @@ void ofApp::makeOrb(){
         pixOrb[i*3+1]=orbColor.g;
         pixOrb[i*3+2]=orbColor.b;
     }
+}
+
+void ofApp::testSensor(){
+    if (sensorValue > 8) {
+        trame.play();
+        waiting=false;
+    } else {
+        trame.stop();
+        waiting=true;
+    }
+    
+}
+
+void ofApp::orbBreathe(){
+    orbLum+=orbDir*orbInc;
+    if (orbLum<=orbMin) {orbLum=orbMin; orbDir=1.;}
+    else if (orbLum>=orbMax) {orbLum=orbMax; orbDir=-1.;}
+    ofLogNotice("orb luminosity: ") << orbLum;
 }
 
 //-------------------------------------------------------------
