@@ -9,41 +9,30 @@ void ofApp::setup(){
     receiver.setup(PORTIN);
     ofLog() << "Opened OSC Receiver";
   
-    
     // display
     ofBackground(0,0,0);
     ofSetVerticalSync(true);
-    ofSetFrameRate(30); // if vertical sync is off, we can go a bit fast... this caps the framerate at 60fps.
-  
+    ofSetFrameRate(30);
+    
+
     // Video player
     trame.setPixelFormat(OF_PIXELS_RGB);
     //trame.load("bright.mov");
     trame.load("/data/Interlude.mov");
     ofLog() << "Loaded Mov";
     trame.setLoopState(OF_LOOP_NONE);
+    pixels.allocate(width, height, 3);
   
     // Orb
     pixOrb.allocate(OrbSize, 1, 3);
+    makeOrb();
     
     // Network input
     NetBuffer.allocate(width*height*3);
     for (int i=0;i<width*height*3;i++) NetBuffer.getData()[i] = 0;
-
-  
-    if (send){
-        // open an outgoing connection to HOST:PORT
-        sender.setup(HOST, PORT);
-        ofLog() << "Opened OSC Sender";
-    }
-    
-    if(playing){
-      trame.play();
-      }
   
     
     // setup Serial
-    
-    //std::vector<ofx::IO::SerialDeviceInfo> devicesInfo = ofx::IO::SerialDeviceUtils::listDevices();
     
     ofLogNotice("ofApp::setup") << "Connected Devices: ";
     for (auto d : devicesInfo) ofLogNotice("ofApp::setup") << d;
@@ -115,6 +104,10 @@ void ofApp::setup(){
     ledLine[6].offset = 0;
     ledLine[6].size = 1;
     ledLine[6].Xsize = OrbSize;
+    
+    for (int i=0; i<7; i++) {
+        ledLine[i].setup();
+    }
 
 }
 
@@ -128,104 +121,141 @@ void ofApp::update(){
         ofxOscMessage m;
         receiver.getNextMessage(m);
       
-          if(m.getAddress() == "/play"){
-            ofLog() << "play" << m.getArgAsInt32(0);
-            if(m.getArgAsBool(0)){trame.play(); playing = 1;}
-            else if(!m.getArgAsBool(0)){trame.stop(); playing = 0; for (int i=0;i<width*height*3;i++) NetBuffer.getData()[i] = 0;}
+        if(m.getAddress() == "/play"){
+          ofLog() << "play" << m.getArgAsInt32(0);
+          if(m.getArgAsBool(0)){ playing = 1;}
+          else if(!m.getArgAsBool(0)){
+              playing = 0;
+              for (int i=0;i<width*height*3;i++) NetBuffer.getData()[i] = 0;
           }
+        }
       
-          else if(m.getAddress() == "/pause"){
-            ofLog() << "pause" << m.getArgAsInt32(0);
-            if(m.getArgAsBool(0)){trame.setPaused(1);}
-            else if(!m.getArgAsBool(0)){trame.setPaused(1);}
-          }
+        else if(m.getAddress() == "/pause"){
+          ofLog() << "pause" << m.getArgAsInt32(0);
+          if(m.getArgAsBool(0)){trame.setPaused(1);}
+          else if(!m.getArgAsBool(0)){trame.setPaused(1);}
+        }
         
-          else if(m.getAddress() == "/position"){
-            ofLog() << "position" << m.getArgAsFloat(0);
-            trame.setPosition(m.getArgAsFloat(0));
-          }
+        else if(m.getAddress() == "/position"){
+          ofLog() << "position" << m.getArgAsFloat(0);
+          trame.setPosition(m.getArgAsFloat(0));
+        }
         
-          else if(m.getAddress() == "/speed"){
-            ofLog() << "speed" << m.getArgAsFloat(0);
-            trame.setSpeed(m.getArgAsFloat(0));
-          }
+        else if(m.getAddress() == "/speed"){
+          ofLog() << "speed" << m.getArgAsFloat(0);
+          trame.setSpeed(m.getArgAsFloat(0));
+        }
         
-          else if(m.getAddress() == "/image"){
+        else if(m.getAddress() == "/image"){
             if (!playing){
                 NetBuffer = m.getArgAsBlob(0);
-              }
-          }
+            }
+        }
         
-          else if(m.getAddress() == "/bright"){
-              for (int i=0; i<6; i++){
-                  setDither(i, m.getArgAsInt32(0));
-              }
-              //ofLog() << "d" << m.getArgAsInt32(0);
-          }
+        else if(m.getAddress() == "/wallLum"){
+            
+        }
         
-          else if(m.getAddress() == "/orb"){
-              setDither(6, m.getArgAsInt32(0));
-              //ofLog() << "d" << m.getArgAsInt32(0);
-          }
-          
+        else if(m.getAddress() == "/orbLum"){
+            
+        }
+        
+        else if(m.getAddress() == "/orbPeriod"){
+            orbInc = fps / (m.getArgAsFloat(0) * 500.) ;
+        }
+        
+        else if(m.getAddress() == "/orbColor"){
+            orbColor.r = m.getArgAsInt32(0);
+            orbColor.g = m.getArgAsInt32(1);
+            orbColor.b = m.getArgAsInt32(2);
+            makeOrb();
+        }
+        
+        else if(m.getAddress() == "/sensor"){
+            sensorValue = m.getArgAsInt32(0);
+        }
         
     }
   
-    trame.update();
+    testSensor();
     
-    if (trame.getIsMovieDone()){
-        
-    }
-      
-  
-    // get part of the image for the LEDs
-      
     if(playing){
-        pixels = trame.getPixels();
+        if (waiting){
+            orbBreathe();
+            sendLine(6);
+        } else {
+            trame.update();
+            pixels = trame.getPixels();
+            for (int i=0; i<6; i++) {
+                sendLine(i);
+            }
+            
         }
-
-    else{
+    } else {
         pixels.setFromExternalPixels((unsigned char*)NetBuffer.getData(), 66, 22, 3);
+        for (int i=0; i<6; i++) {
+            sendLine(i);
         }
-    
-
-    //  Fond brightness
-    for (int i=0; i<6; i++){
-      setBrightness(i, 31);
     }
-
-    //  Orb brightness
-    setBrightness(6, 31);
-
-    
- 
-    if (send){
-      
-      imgAsBuffer.clear();
-      imgAsBuffer.append((const char*)pixels.getData(),pixels.size());
-      ofxOscMessage m;
-      m.setAddress("/image");
-      m.addBlobArg(imgAsBuffer);
-      sender.sendMessage(m);
-      
-    }
-   
-    
-
-    for (int i=0; i<7; i++) {
-        sendLine(i);
-        }
-
 }
 
-void ofApp::setBrightness(int i, int brightness) {
+void ofApp::testSensor(){
+    if (sensorValue >= 8 && waiting) {
+        trame.play();
+        waiting=false;
+        wallLum=1.;
+        setWallLum();
+    } else if ( sensorValue < 8 && !waiting ){
+        trame.stop();
+        waiting=true;
+        wallLum=0.;
+        setWallLum();
+    }
+}
+
+void ofApp::orbBreathe(){
+    orbLum+=orbDir*orbInc;
+    if (orbLum<=orbMin) {orbLum=orbMin; orbDir=1.;}
+    else if (orbLum>=orbMax) {orbLum=orbMax; orbDir=-1.;}
+    size_t lum = size_t(orbLum * 1041.);
+    setBrightness(6, bright[lum]);
+    setDither(6, dither[lum]);
+    //ofLogNotice("orb luminosity: ") << orbLum << " -> " << lum;
+    //ofLogNotice("Orb - bright / dither: ") << int(bright[lum]) << " / " << int(dither[lum]) ;
+}
+
+
+void ofApp::makeOrb(){
+    for (int i=0; i<OrbSize; ++i){
+        pixOrb[i*3]  =orbColor.r;
+        pixOrb[i*3+1]=orbColor.g;
+        pixOrb[i*3+2]=orbColor.b;
+    }
+}
+
+void ofApp::setWallLum(){
+    //  Wall brightness
+    int lum = int(wallLum * 1041.);
+    uint8_t br = bright[lum];
+    uint8_t di = dither[lum];
+    ofLogNotice("Wall luminosity: ") << wallLum << " -> " << lum;
+    //ofLogNotice("Wall - bright / dither: ") << int(bright[lum]) << " / " << int(dither[lum]) ;
+    for (int i=0; i<6; i++){
+        setBrightness(i, br);
+    }
+    for (int i=0; i<6; i++){
+        setDither(i, di);
+    }
+}
+
+void ofApp::setBrightness(int i, uint8_t brightness) {
 
     // check for waiting messages
     
         LedLine line = ledLine[i];
         ofxOscMessage n;
         n.setAddress(line.address);
-        n.addIntArg(brightness);
+        n.addIntArg(int(brightness));
         
         // this code come from ofxOscSender::sendMessage in ofxOscSender.cpp
         static const int OUTPUT_BUFFER_SIZE = 16384;
@@ -246,17 +276,16 @@ void ofApp::setBrightness(int i, int brightness) {
             ofLogError("sendLine") << "failed to send data : " << e.what();
             line.dev->setup();
         }
-
 }
 
-void ofApp::setDither(int i, int dither) {
+void ofApp::setDither(int i, uint8_t dither) {
   
         // check for waiting messages
         
         LedLine line = ledLine[i];
         ofxOscMessage n;
         n.setAddress("/b");
-        n.addIntArg(dither);
+        n.addIntArg(int(dither));
         
         // this code come from ofxOscSender::sendMessage in ofxOscSender.cpp
         static const int OUTPUT_BUFFER_SIZE = 16384;
@@ -318,11 +347,8 @@ void ofApp::sendLine(int i) {
     }
 }
 
-void ofApp::makeOrb(){
-    for (int i=0; i<OrbSize; ++i){
-        
-    }
-}
+
+
 
 //-------------------------------------------------------------
 void ofApp::draw(){
@@ -335,7 +361,7 @@ void ofApp::draw(){
 
     
     //trame.play();
-    trame.draw(20, 20, 450, 450);
+    //pixels.draw(20, 20, 450, 450);
 
   
     for (int i=0; i<6; i++) {
@@ -343,15 +369,14 @@ void ofApp::draw(){
         img.setFromPixels(ledLine[i].pixelCrop);
         img.draw(500, ledLine[i].offset*15, 450, ledLine[i].size*10);
     }
-    /*
-    ofImage img;
-    img.setFromPixels(ledLine[6].pixelCrop);
-    img.draw(500, 600, 450, ledLine[6].size*30);
-  */
+    
+    ofImage imgOrb;
+    imgOrb.setFromPixels(ledLine[6].pixelCrop);
+    imgOrb.draw(500, 400, 450, ledLine[6].size*30);
 
-    img.setFromPixels(pixels);
-    img.draw(20, 20, 450, 450);
-  
+    ofImage imgWall;
+    imgWall.setFromPixels(pixels);
+    imgWall.draw(20, 20, 450, 450);
   
 #endif
 
@@ -398,6 +423,17 @@ void ofApp::exit(){
 
 //-------------------------------------------------------------
 //-------------------------------------------------------------
+
+std::string ofApp::portName(int SN)
+{
+    for (const auto& devInfo : devicesInfo){
+        if ((devInfo.getHardwareId().find((std::to_string(SN))))<60){
+            cout << "found: " << devInfo.getPort() << endl;
+            return devInfo.getPort();
+        }
+    }
+    return "";
+}
 
 
 void ofApp::onSerialBuffer(const ofx::IO::SerialBufferEventArgs& args)
