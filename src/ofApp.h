@@ -15,7 +15,7 @@ public:
     void exit();
 
     // parameters:
-    float fps {30.};
+    float fps {25.};
     float orbInc {0.01}, wallInc {0.01};
     float orbMin {0.2}, orbMax {1.};
     float orbDir {1.};
@@ -41,6 +41,9 @@ private:
     void orbBreathe();
     
     // Components:
+   
+    ofDirectory dir;
+
     ofPixels pixels, pixOrb;
     
     ofVideoPlayer trame;
@@ -58,10 +61,10 @@ private:
     
     // Internal variables:
     bool playing {true};
-    bool waiting {true};
+    bool waiting {false};
     
     int width {66}, height {22};
-    int OrbSize {20};
+    int OrbSize {6};
     
     int sensorValue {0};
     

@@ -13,15 +13,27 @@ void ofApp::setup(){
     ofBackground(0,0,0);
     ofSetVerticalSync(true);
     ofSetFrameRate(30);
-    
+
+    dir.open("/data");
+ 
+ 	dir.allowExt("mov");
+ 	dir.listDir();
+ 	ofLog() << "dir size" << dir.size() ;
+
+//go through and print out all the paths
+for(int i = 0; i < dir.size(); i++){
+    ofLogNotice(dir.getPath(i));
+}
 
     // Video player
     trame.setPixelFormat(OF_PIXELS_RGB);
     //trame.load("bright.mov");
-    trame.load("/data/Interlude.mov");
+    trame.load("/data/190211_XP-White-01-Pi.mov");//"/data/Interlude.mov");//(
     ofLog() << "Loaded Mov";
     trame.setLoopState(OF_LOOP_NONE);
+    trame.setVolume(1.);
     pixels.allocate(width, height, 3);
+    if (playing) {trame.play();}
   
     // Orb
     pixOrb.allocate(OrbSize, 1, 3);
@@ -123,9 +135,14 @@ void ofApp::update(){
       
         if(m.getAddress() == "/play"){
           ofLog() << "play" << m.getArgAsInt32(0);
-          if(m.getArgAsBool(0)){ playing = 1;}
+          if(m.getArgAsBool(0)){ 
+          	trame.load(dir.getPath(ofRandom(dir.size())));
+          	playing = 1; 
+          	trame.play();
+          }
           else if(!m.getArgAsBool(0)){
               playing = 0;
+              trame.stop();
               for (int i=0;i<width*height*3;i++) NetBuffer.getData()[i] = 0;
           }
         }
@@ -177,7 +194,7 @@ void ofApp::update(){
         
     }
   
-    testSensor();
+    //testSensor();
     
     if(playing){
         if (waiting){
