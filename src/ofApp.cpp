@@ -49,10 +49,10 @@ for(int i = 0; i < dir.size(); i++){
     ofLogNotice("ofApp::setup") << "Connected Devices: ";
     for (auto d : devicesInfo) ofLogNotice("ofApp::setup") << d;
     
-    device.name = portName(3972520); // "/dev/cu.usbmodem1369841";
-    device2.name = portName(3972260); //"/dev/cu.usbmodem1455771";
-    device3.name = portName(3902210); //"/dev/cu.usbmodem1383111";
-    device4.name = portName(3972320); //"/dev/cu.usbmodem1365391";
+    device.name = portName(1365390);//3972520); // "/dev/cu.usbmodem1369841";
+    device2.name = portName(1369840);//3972260); //"/dev/cu.usbmodem1455771";
+    device3.name = portName(1455770);//3902210); //"/dev/cu.usbmodem1383111";
+    device4.name = portName(1383110);//3972320); //"/dev/cu.usbmodem1365391";
   
 
     device.setup();
@@ -137,6 +137,7 @@ void ofApp::update(){
           ofLog() << "play" << m.getArgAsInt32(0);
           if(m.getArgAsBool(0)){ 
           	trame.load(dir.getPath(ofRandom(dir.size())));
+          	trame.setLoopState(OF_LOOP_NONE);
           	playing = 1; 
           	trame.play();
           }
@@ -170,12 +171,10 @@ void ofApp::update(){
         }
         
         else if(m.getAddress() == "/wallLum"){
-            
+            wallLum = m.getArgAsFloat(0);
+            setWallLum();
         }
         
-        else if(m.getAddress() == "/orbLum"){
-            
-        }
         
         else if(m.getAddress() == "/orbPeriod"){
             orbInc = fps / (m.getArgAsFloat(0) * 500.) ;
@@ -255,7 +254,7 @@ void ofApp::setWallLum(){
     int lum = int(wallLum * 1041.);
     uint8_t br = bright[lum];
     uint8_t di = dither[lum];
-    ofLogNotice("Wall luminosity: ") << wallLum << " -> " << lum;
+    //ofLogNotice("Wall luminosity: ") << wallLum << " -> " << lum;
     //ofLogNotice("Wall - bright / dither: ") << int(bright[lum]) << " / " << int(dither[lum]) ;
     for (int i=0; i<6; i++){
         setBrightness(i, br);
