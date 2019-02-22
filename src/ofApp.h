@@ -15,13 +15,29 @@ public:
     void draw();
     void exit();
 
-    // parameters:
-    float fps {25.};
-    float orbInc {0.01}, wallInc {0.01};
-    float orbMin {0.2}, orbMax {1.};
-    float orbDir {1.};
+    /////////////////////////////////////////////////////////////////////
+    /////////////////////////////////////////////////////////////////////
+    /////////////////////////////////////////////////////////////////////        
+    /////////////////////////////////////////////////////////////////////
+
+    // Values that can be changed to fit your needs:
+
+    float fps {25.};            // framerate
+
+    float testingTime {1.};     // Testing time in seconds
+ 
+    float orbMin {0.1};         // Minimum luminosity of orb breathing
+    float orbMax {0.8};          // Maximum luminosity of orb breathing
+
+    float orbBreathePeriod {12.}; // Breathing cycle time of the orb (seconds)
+ 
     
-    ofColor orbColor {255, 255, 255, 255};
+    ofColor orbColor {255, 127, 255, 255};  // orb color (probably RGBA)
+
+    /////////////////////////////////////////////////////////////////////
+    /////////////////////////////////////////////////////////////////////
+    /////////////////////////////////////////////////////////////////////        
+    /////////////////////////////////////////////////////////////////////
 
     // Serial events:
     void onSerialBuffer(const ofx::IO::SerialBufferEventArgs& args);
@@ -61,18 +77,23 @@ private:
     
     Teensy device, device2, device3, device4;
     LedLine ledLine[7];
+
     
     // Internal variables:
     bool playing {true};
     bool waiting {false};
     bool testing {false};
 
+    float orbInc = 1./(orbBreathePeriod/2*fps);  
+    float wallInc {0.01};
+
     int testIndex {0};
-    int numTests {25};
+    const int numTests = testingTime * fps;
     int testValue {0};
     
     int width {66}, height {22};
     int OrbSize {6};
+    float orbDir {1.};
     
     int sensorValue {0};
     

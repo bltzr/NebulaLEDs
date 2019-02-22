@@ -18,12 +18,13 @@ void ofApp::setup(){
  
  	dir.allowExt("mov");
  	dir.listDir();
+    dir.sort();
  	ofLog() << "dir size" << dir.size() ;
 
-//go through and print out all the paths
-for(int i = 0; i < dir.size(); i++){
-    ofLogNotice(dir.getPath(i));
-}
+    //go through and print out all the paths
+    for(int i = 0; i < dir.size(); i++){
+        ofLogNotice(dir.getPath(i));
+    }
 
     // Video player
     trame.setPixelFormat(OF_PIXELS_RGB);
@@ -255,7 +256,7 @@ void ofApp::update(){
 void ofApp::testSensor(){
 
     if (sensorValue >= 8 && waiting && !testing ) {
-        trame.play();
+
         waiting=false;
         testing=true;
         wallLum=0.;
@@ -263,6 +264,7 @@ void ofApp::testSensor(){
     }
 
     else if ( sensorValue >= 8 && !waiting && testing){
+
         testIndex++;
         testValue+=sensorValue;
         ofLog() << "testing start, value= " << sensorValue ; 
@@ -325,6 +327,8 @@ void ofApp::testSensor(){
             testIndex = 0;
         }
     }
+
+    else if ( sensorValue >= 8 && !waiting && !testing) testIndex = 0;
 }
 
 void ofApp::orbBreathe(){
@@ -561,7 +565,9 @@ std::string ofApp::portName(std::string SN)
 }
 
 void ofApp::launchVideo(int nr){
-    trame.load(dir.getPath(ofRandom(nr)));
+    ofLog() << "video chosen: #" << nr;
+    trame.load(dir.getPath(nr));
+    ofLog() << dir.getPath(nr);
     trame.setLoopState(OF_LOOP_NONE);
     playing = 1; 
     trame.play();
