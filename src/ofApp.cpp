@@ -274,7 +274,7 @@ void ofApp::setupSerials(){
     }
 
     for (int i=0; i<7; i++) {
-        setBrightness(i, 16);
+        setBrightness(i, generalBrightness);
     }
 }
 

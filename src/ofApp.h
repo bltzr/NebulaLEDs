@@ -26,7 +26,9 @@ public:
 
     float testingTime {1.};     // Testing time in seconds
 
-    float lumWallMax {1.};     // Max luminosity of wall's screen
+    int generalBrightness {8};  // General brightness (max 31)
+
+    float lumWallMax {1.};      // Max luminosity of wall's screen
     float wallFadeInTime {0.5}; // Wall's fade in time
     float wallFadeOutTime {4.}; // Wall's fade out time
      
