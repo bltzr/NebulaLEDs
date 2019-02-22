@@ -123,7 +123,7 @@ for(int i = 0; i < dir.size(); i++){
     }
     
     //SENSOR SETUP
-    serial.setup(portName(7543536313835101A2D0), 9600);
+    serial.setup(portName("7543536313835101A2D0"), 9600);
     
     serial.startContinuousRead();
     ofAddListener(serial.NEW_MESSAGE,this,&ofApp::onNewMessage);
