@@ -28,7 +28,7 @@ for(int i = 0; i < dir.size(); i++){
     // Video player
     trame.setPixelFormat(OF_PIXELS_RGB);
     //trame.load("bright.mov");
-    trame.load("/data/190211_XP-White-01-Pi.mov");//"/data/Interlude.mov");//(
+    trame.load(dir.getPath(ofRandom(dir.size())));
     ofLog() << "Loaded Mov";
     trame.setLoopState(OF_LOOP_NONE);
     trame.setVolume(1.);
@@ -49,10 +49,10 @@ for(int i = 0; i < dir.size(); i++){
     ofLogNotice("ofApp::setup") << "Connected Devices: ";
     for (auto d : devicesInfo) ofLogNotice("ofApp::setup") << d;
     
-    device.name = portName(1365390);//3972520); // "/dev/cu.usbmodem1369841";
-    device2.name = portName(1369840);//3972260); //"/dev/cu.usbmodem1455771";
-    device3.name = portName(1455770);//3902210); //"/dev/cu.usbmodem1383111";
-    device4.name = portName(1383110);//3972320); //"/dev/cu.usbmodem1365391";
+    device.name = portName(3972520); // "/dev/cu.usbmodem1369841"; 3902210
+    device2.name = portName(3972260); //"/dev/cu.usbmodem1455771";
+    device3.name = portName(3902210); //"/dev/cu.usbmodem1383111";
+    device4.name = portName(3972320); //"/dev/cu.usbmodem1365391";
   
 
     device.setup();
