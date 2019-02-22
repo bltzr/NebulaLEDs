@@ -46,6 +46,7 @@ public:
 private:
     
     // Private methods:
+    void setupSerials();
     void sendLine(int i);
     void setBrightness(int line, uint8_t brightness);
     void setDither(int line, uint8_t dither);
@@ -53,9 +54,14 @@ private:
     
     void setWallLum();
     //void setOrbLum();
+
+    void getOSC();
+    void getSensor();
     
     void testSensor();
     void orbBreathe();
+
+
     
     // Components:
    

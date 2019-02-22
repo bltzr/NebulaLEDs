@@ -56,72 +56,7 @@ void ofApp::setup(){
     device3.name = portName(3902210); //"/dev/cu.usbmodem1383111";
     device4.name = portName(3972320); //"/dev/cu.usbmodem1365391";
   
-
-    device.setup();
-    device2.setup();
-    device3.setup();
-    device4.setup();
-
-    
-    ledLine[0].dev = &device;
-    ledLine[0].src = &pixels;
-    ledLine[0].address = "/1";
-    ledLine[0].nbPix = 264;
-    ledLine[0].offset = 0;
-    ledLine[0].size = 4;
-    ledLine[0].Xsize = width;
-    
-    ledLine[1].dev = &device3;
-    ledLine[1].src = &pixels;
-    ledLine[1].address = "/1";
-    ledLine[1].nbPix = 264;
-    ledLine[1].offset = 4;
-    ledLine[1].size = 4;
-    ledLine[1].Xsize = width;
-
-    ledLine[2].dev = &device2;
-    ledLine[2].src = &pixels;
-    ledLine[2].address = "/2";
-    ledLine[2].nbPix = 264;
-    ledLine[2].offset = 8;
-    ledLine[2].size = 4;
-    ledLine[2].Xsize = width;
-
-    ledLine[3].dev = &device;
-    ledLine[3].src = &pixels;
-    ledLine[3].address = "/2";
-    ledLine[3].nbPix = 264;
-    ledLine[3].offset = 12;
-    ledLine[3].size = 4;
-    ledLine[3].Xsize = width;
-    
-    ledLine[4].dev = &device3;
-    ledLine[4].src = &pixels;
-    ledLine[4].address = "/2";
-    ledLine[4].nbPix = 264;
-    ledLine[4].offset = 16;
-    ledLine[4].size = 4;
-    ledLine[4].Xsize = width;
-    
-    ledLine[5].dev = &device2;
-    ledLine[5].src = &pixels;
-    ledLine[5].address = "/1";
-    ledLine[5].nbPix = 81;
-    ledLine[5].offset = 20;
-    ledLine[5].size = 2;
-    ledLine[5].Xsize = width;
-    
-    ledLine[6].dev = &device4;
-    ledLine[6].src = &pixOrb;
-    ledLine[6].address = "/1";
-    ledLine[6].nbPix = OrbSize;
-    ledLine[6].offset = 0;
-    ledLine[6].size = 1;
-    ledLine[6].Xsize = OrbSize;
-    
-    for (int i=0; i<7; i++) {
-        ledLine[i].setup();
-    }
+    setupSerials();
     
     //SENSOR SETUP
     sensorDevice.setup(portName("7543536313835101A2D0"), 9600);
@@ -134,103 +69,8 @@ void ofApp::setup(){
 //--------------------------------------------------------------
 void ofApp::update(){
 
-
-    // OSC STUFF:
-    while(receiver.hasWaitingMessages()){
-        // get the next message
-        ofxOscMessage m;
-        receiver.getNextMessage(m);
-      
-        if(m.getAddress() == "/play"){
-          ofLog() << "play" << m.getArgAsInt32(0);
-          if(m.getArgAsBool(0)){ 
-          	trame.load(dir.getPath(ofRandom(dir.size())));
-          	trame.setLoopState(OF_LOOP_NONE);
-          	playing = 1; 
-          	trame.play();
-          }
-          else if(!m.getArgAsBool(0)){
-              playing = 0;
-              trame.stop();
-              for (int i=0;i<width*height*3;i++) NetBuffer.getData()[i] = 0;
-          }
-        }
-      
-        else if(m.getAddress() == "/pause"){
-          ofLog() << "pause" << m.getArgAsInt32(0);
-          if(m.getArgAsBool(0)){trame.setPaused(1);}
-          else if(!m.getArgAsBool(0)){trame.setPaused(1);}
-        }
-        
-        else if(m.getAddress() == "/position"){
-          ofLog() << "position" << m.getArgAsFloat(0);
-          trame.setPosition(m.getArgAsFloat(0));
-        }
-        
-        else if(m.getAddress() == "/speed"){
-          ofLog() << "speed" << m.getArgAsFloat(0);
-          trame.setSpeed(m.getArgAsFloat(0));
-        }
-        
-        else if(m.getAddress() == "/image"){
-            if (!playing){
-                NetBuffer = m.getArgAsBlob(0);
-            }
-        }
-        
-        else if(m.getAddress() == "/wallLum"){
-            wallLum = m.getArgAsFloat(0);
-            setWallLum();
-        }
-        
-        
-        else if(m.getAddress() == "/orbPeriod"){
-            orbInc = fps / (m.getArgAsFloat(0) * 500.) ;
-        }
-        
-        else if(m.getAddress() == "/orbColor"){
-            orbColor.r = m.getArgAsInt32(0);
-            orbColor.g = m.getArgAsInt32(1);
-            orbColor.b = m.getArgAsInt32(2);
-            makeOrb();
-        }
-        
-        else if(m.getAddress() == "/sensor"){
-            sensorValue = m.getArgAsInt32(0);
-        }
-        
-    }
-  
-     try
-    {
-        // Read all bytes from the device;
-        uint8_t buffer[1024];
-
-        while (sensorDevice.available() > 0)
-        {
-            std::size_t sz = sensorDevice.readBytes(buffer, 1024);
-
-            if (sz >2) {
-                int exp = 1;
-                int value = 0; 
-
-                for (std::size_t i = 0 ; i < sz - 2; ++i)
-                {   
-                    value += (int(buffer[sz-3-i])-48) * exp;
-                    exp *= 10;
-                }
-                sensorValue = value; 
-                //ofLog()  << "value: " << sensorValue ;
-            }
-        }
-
-    }
-    catch (const std::exception& exc)
-    {
-        ofLogError("ofApp::update") << exc.what();
-    }
-
-    //serial.sendRequest();
+    getOSC();
+    getSensor();
     testSensor();
     
     if(playing){
@@ -251,7 +91,10 @@ void ofApp::update(){
             sendLine(i);
         }
     }*/
+    
 }
+
+//--------------------------------------------------------------
 
 void ofApp::testSensor(){
 
@@ -329,6 +172,177 @@ void ofApp::testSensor(){
     }
 
     else if ( sensorValue >= 8 && !waiting && !testing) testIndex = 0;
+}
+
+
+//--------------------------------------------------------------
+
+void ofApp::setupSerials(){
+
+    device.setup();
+    device2.setup();
+    device3.setup();
+    device4.setup();
+
+    
+    ledLine[0].dev = &device;
+    ledLine[0].src = &pixels;
+    ledLine[0].address = "/1";
+    ledLine[0].nbPix = 264;
+    ledLine[0].offset = 0;
+    ledLine[0].size = 4;
+    ledLine[0].Xsize = width;
+    
+    ledLine[1].dev = &device3;
+    ledLine[1].src = &pixels;
+    ledLine[1].address = "/1";
+    ledLine[1].nbPix = 264;
+    ledLine[1].offset = 4;
+    ledLine[1].size = 4;
+    ledLine[1].Xsize = width;
+
+    ledLine[2].dev = &device2;
+    ledLine[2].src = &pixels;
+    ledLine[2].address = "/2";
+    ledLine[2].nbPix = 264;
+    ledLine[2].offset = 8;
+    ledLine[2].size = 4;
+    ledLine[2].Xsize = width;
+
+    ledLine[3].dev = &device;
+    ledLine[3].src = &pixels;
+    ledLine[3].address = "/2";
+    ledLine[3].nbPix = 264;
+    ledLine[3].offset = 12;
+    ledLine[3].size = 4;
+    ledLine[3].Xsize = width;
+    
+    ledLine[4].dev = &device3;
+    ledLine[4].src = &pixels;
+    ledLine[4].address = "/2";
+    ledLine[4].nbPix = 264;
+    ledLine[4].offset = 16;
+    ledLine[4].size = 4;
+    ledLine[4].Xsize = width;
+    
+    ledLine[5].dev = &device2;
+    ledLine[5].src = &pixels;
+    ledLine[5].address = "/1";
+    ledLine[5].nbPix = 81;
+    ledLine[5].offset = 20;
+    ledLine[5].size = 2;
+    ledLine[5].Xsize = width;
+    
+    ledLine[6].dev = &device4;
+    ledLine[6].src = &pixOrb;
+    ledLine[6].address = "/1";
+    ledLine[6].nbPix = OrbSize;
+    ledLine[6].offset = 0;
+    ledLine[6].size = 1;
+    ledLine[6].Xsize = OrbSize;
+    
+    for (int i=0; i<7; i++) {
+        ledLine[i].setup();
+    }
+}
+
+void ofApp::getSensor(){
+    try
+        {
+            // Read all bytes from the device;
+            uint8_t buffer[1024];
+
+            while (sensorDevice.available() > 0)
+            {
+                std::size_t sz = sensorDevice.readBytes(buffer, 1024);
+
+                if (sz >2) {
+                    int exp = 1;
+                    int value = 0; 
+
+                    for (std::size_t i = 0 ; i < sz - 2; ++i)
+                    {   
+                        value += (int(buffer[sz-3-i])-48) * exp;
+                        exp *= 10;
+                    }
+                    sensorValue = value; 
+                    //ofLog()  << "value: " << sensorValue ;
+                }
+            }
+
+        }
+    catch (const std::exception& exc)
+        {
+            ofLogError("ofApp::update") << exc.what();
+        }
+
+}
+
+void ofApp::getOSC(){
+    while(receiver.hasWaitingMessages()){
+        // get the next message
+        ofxOscMessage m;
+        receiver.getNextMessage(m);
+      
+        if(m.getAddress() == "/play"){
+          ofLog() << "play" << m.getArgAsInt32(0);
+          if(m.getArgAsBool(0)){ 
+            trame.load(dir.getPath(ofRandom(dir.size())));
+            trame.setLoopState(OF_LOOP_NONE);
+            playing = 1; 
+            trame.play();
+          }
+          else if(!m.getArgAsBool(0)){
+              playing = 0;
+              trame.stop();
+              for (int i=0;i<width*height*3;i++) NetBuffer.getData()[i] = 0;
+          }
+        }
+      
+        else if(m.getAddress() == "/pause"){
+          ofLog() << "pause" << m.getArgAsInt32(0);
+          if(m.getArgAsBool(0)){trame.setPaused(1);}
+          else if(!m.getArgAsBool(0)){trame.setPaused(1);}
+        }
+        
+        else if(m.getAddress() == "/position"){
+          ofLog() << "position" << m.getArgAsFloat(0);
+          trame.setPosition(m.getArgAsFloat(0));
+        }
+        
+        else if(m.getAddress() == "/speed"){
+          ofLog() << "speed" << m.getArgAsFloat(0);
+          trame.setSpeed(m.getArgAsFloat(0));
+        }
+        
+        else if(m.getAddress() == "/image"){
+            if (!playing){
+                NetBuffer = m.getArgAsBlob(0);
+            }
+        }
+        
+        else if(m.getAddress() == "/wallLum"){
+            wallLum = m.getArgAsFloat(0);
+            setWallLum();
+        }
+        
+        
+        else if(m.getAddress() == "/orbPeriod"){
+            orbInc = fps / (m.getArgAsFloat(0) * 500.) ;
+        }
+        
+        else if(m.getAddress() == "/orbColor"){
+            orbColor.r = m.getArgAsInt32(0);
+            orbColor.g = m.getArgAsInt32(1);
+            orbColor.b = m.getArgAsInt32(2);
+            makeOrb();
+        }
+        
+        else if(m.getAddress() == "/sensor"){
+            sensorValue = m.getArgAsInt32(0);
+        }
+        
+    }
 }
 
 void ofApp::orbBreathe(){
