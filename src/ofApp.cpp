@@ -22,7 +22,7 @@ void ofApp::setup(){
  	ofLog() << "dir size" << dir.size() ;
 
     //go through and print out all the paths
-    for(int i = 0; i < dir.size(); i++){
+    for(size_t i = 0; i < dir.size(); i++){
         ofLogNotice(dir.getPath(i));
     }
 
@@ -34,11 +34,8 @@ void ofApp::setup(){
     trame.setLoopState(OF_LOOP_NONE);
     trame.setVolume(1.);
     pixels.allocate(width, height, 3);
-    if (playing) {trame.play();}
-  
-    // Orb
-    pixOrb.allocate(OrbSize, 1, 3);
-    makeOrb();
+    //if (playing) {trame.play();}
+
     
     // Network input
     NetBuffer.allocate(width*height*3);
@@ -46,8 +43,7 @@ void ofApp::setup(){
   
     
     // setup Serial
-    
-    
+
     ofLogNotice("ofApp::setup") << "Connected Devices: ";
     for (auto d : devicesInfo) ofLogNotice("ofApp::setup") << d;
     
@@ -61,6 +57,11 @@ void ofApp::setup(){
     //SENSOR SETUP
     sensorDevice.setup(portName("7543536313835101A2D0"), 9600);
 
+    // Orb
+    pixOrb.allocate(OrbSize, 1, 3);
+    makeOrb();
+    sendLine(6);
+
 }
 
 //--------------------------------------------------------------
@@ -69,15 +70,17 @@ void ofApp::update(){
     getOSC();
     getSensor();
     testSensor();
-    updateFades();
     
     if(playing){
         if (waiting || testing){
             orbBreathe();
-            sendLine(6);
+            updateFades();
+            //sendLine(6);
+            setWallLum();
         } else {
             trame.update();
             pixels = trame.getPixels();
+            updateFades();
             for (int i=0; i<6; i++) {
                 sendLine(i);
             }
@@ -89,7 +92,7 @@ void ofApp::update(){
             sendLine(i);
         }
     }
-
+    //updateFades();
     
     
 }
@@ -111,6 +114,7 @@ void ofApp::testSensor(){
         testIndex++;
         testValue+=sensorValue;
         //ofLog() << "testing start, value= " << sensorValue ; 
+        orbMultInc=-1./numTests;
 
         if (testIndex>numTests){
 
@@ -156,25 +160,28 @@ void ofApp::testSensor(){
 
     } 
 
-    else if (sensorValue < 8 && !waiting && !testing){
+    else if (sensorValue < 1 && !waiting && !testing){
         testIndex++;
+        orbMultInc=1./numTests;
         //ofLog() << "testing stop, value= " << sensorValue ; 
         wallInc=-(lumWallMax/(wallFadeOutTime*fps));
+        volInc=-(1./(wallFadeOutTime*fps));
 
         //if (testIndex>numTests){
         if (wallLum<=0.){
-            ofLog() << "stopping, value= " << sensorValue ; 
+            //ofLog() << "stopping, value= " << sensorValue ; 
             trame.stop();
-            waiting=true;
-            testIndex=0;
             wallLum=0.;
             setWallLum();
+            waiting=true;
+            testIndex=0;    
         }
     }
 
-    else if (sensorValue >= 8 && !waiting && !testing) {
+    else if (sensorValue >= 10 && !waiting && !testing) {
         testIndex = 0;
-        wallInc=lumWallMax/(wallFadeInTime*fps);
+        wallInc=lumWallMax/(wallFadeOutTime*fps);
+        volInc=1./(wallFadeOutTime*fps);
     }
 }
 
@@ -182,12 +189,15 @@ void ofApp::testSensor(){
 
 void ofApp::updateFades(){
 
-    if (wallInc) {
-        if ( (wallInc<0. && wallLum > 0.) || (wallInc>0. && wallLum <lumWallMax) ){
+    if ( ((wallInc>=0.00001) && (wallLum < lumWallMax) ) || ((wallInc<=-0.00001) && wallLum > 0.)) {
+        //if ( (wallInc<0. && wallLum >= 0.) || (wallInc>0. && wallLum <= lumWallMax) ){
             wallLum+=wallInc;
-            ofLog() << "luminosity: " << wallLum << " / Inc: " << wallInc;
             setWallLum();
-        }
+            //ofLog() << "luminosity: " << wallLum << " / Inc: " << wallInc;
+            volume+=volInc;
+            setVolume();
+            //ofLog() << "volume: " << volume << " / Inc: " << volInc;
+        //} 
     }
 
 }
@@ -261,6 +271,10 @@ void ofApp::setupSerials(){
     
     for (int i=0; i<7; i++) {
         ledLine[i].setup();
+    }
+
+    for (int i=0; i<7; i++) {
+        setBrightness(i, 16);
     }
 }
 
@@ -364,13 +378,17 @@ void ofApp::getOSC(){
 }
 
 void ofApp::orbBreathe(){
+    if ( ((orbMultInc>=0.00001) && (orbMult < 1.) ) || ((orbMultInc<=-0.00001) && orbMult > 0.)) {
+        orbMult+=orbMultInc;
+    }
     orbLum+=orbDir*orbInc;
+    //orbLum*=orbMult;
     if (orbLum<=orbMin) {orbLum=orbMin; orbDir=1.;}
     else if (orbLum>=orbMax) {orbLum=orbMax; orbDir=-1.;}
-    size_t lum = size_t(orbLum * 1041.);
+    size_t lum = size_t(orbLum*orbMult * 1041.);
     setBrightness(6, bright[lum]);
     setDither(6, dither[lum]);
-    //ofLogNotice("orb luminosity: ") << orbLum << " -> " << lum;
+    //ofLogNotice("orb luminosity: ") << orbLum << " -> " << int(orbLum*255.);
     //ofLogNotice("Orb - bright / dither: ") << int(bright[lum]) << " / " << int(dither[lum]) ;
 }
 
@@ -381,84 +399,92 @@ void ofApp::makeOrb(){
         pixOrb[i*3+1]=orbColor.g;
         pixOrb[i*3+2]=orbColor.b;
     }
+    //sendLine(6);
 }
 
 void ofApp::setWallLum(){
     //  Wall brightness
-    if (wallLum<0.) {wallLum=0.; wallInc=0;}
-    else if (wallLum>lumWallMax) {wallLum=lumWallMax; wallInc=0;}
+    if (wallLum<=0.) {wallLum=0.; wallInc=0;}
+    else if (wallLum>=lumWallMax) {wallLum=lumWallMax; wallInc=0;}
 
-    int lum = int(wallLum * 1041.);
-    uint8_t br = bright[lum];
-    uint8_t di = dither[lum];
-    //ofLogNotice("Wall luminosity: ") << wallLum << " -> " << lum;
+    //int lum = int(wallLum * 1041.);
+    //uint8_t br = bright[lum];
+    //uint8_t di = dither[lum];
+    uint8_t di = int(wallLum * wallLum * 255.);
+    //ofLogNotice("Wall luminosity: ") << wallLum << " -> " << int(wallLum * 255.);
     //ofLogNotice("Wall - bright / dither: ") << int(bright[lum]) << " / " << int(dither[lum]) ;
-    for (int i=0; i<6; i++){
+    /*for (int i=0; i<6; i++){
         setBrightness(i, br);
-    }
+    }*/
     for (int i=0; i<6; i++){
         setDither(i, di);
+        //ledLine[i].dither=di;
     }
+}
+
+void ofApp::setVolume(){
+    if (volume<=0.) {volume=0.; volInc=0;}
+    else if (volume>=1.) {volume=1.; volInc=0;}
+    trame.setVolume(volume*volume);
 }
 
 void ofApp::setBrightness(int i, uint8_t brightness) {
 
-    // check for waiting messages
+    //ledLine[i].brightness = brightness;
+
+    //LedLine & line = ledLine[i];
+    ofxOscMessage n;
+    n.setAddress(ledLine[i].address);
+    n.addIntArg(int(brightness));
     
-        //LedLine & line = ledLine[i];
-        ofxOscMessage n;
-        n.setAddress(ledLine[i].address);
-        n.addIntArg(int(brightness));
-        
-        // this code come from ofxOscSender::sendMessage in ofxOscSender.cpp
-        static const int OUTPUT_BUFFER_SIZE = 16384;
-        char buffer[OUTPUT_BUFFER_SIZE];
-        osc::OutboundPacketStream p( buffer, OUTPUT_BUFFER_SIZE );
-        
-        // serialize the message
-        
-        p << osc::BeginBundleImmediate;
-        appendMessage( n, p );
-        p << osc::EndBundle;
-        
-        ofx::IO::ByteBuffer toEncode(p.Data(),p.Size());
-        
-        try {
-            ledLine[i].dev->dev.send(toEncode);
-        } catch ( serial::SerialException e) {
-            ofLogError("sendLine") << "failed to send data : " << e.what();
-            ledLine[i].dev->setup();
-        }
+    // this code come from ofxOscSender::sendMessage in ofxOscSender.cpp
+    static const int OUTPUT_BUFFER_SIZE = 64;
+    char buffer[OUTPUT_BUFFER_SIZE];
+    osc::OutboundPacketStream p( buffer, OUTPUT_BUFFER_SIZE );
+    
+    // serialize the message
+    
+    p << osc::BeginBundleImmediate;
+    appendMessage( n, p );
+    p << osc::EndBundle;
+    
+    ofx::IO::ByteBuffer toEncode(p.Data(),p.Size());
+    
+    try {
+        ledLine[i].dev->dev.send(toEncode);
+    } catch ( serial::SerialException e) {
+        ofLogError("sendLine") << "failed to send data : " << e.what();
+        ledLine[i].dev->setup();
+    }
 }
 
 void ofApp::setDither(int i, uint8_t dither) {
-  
-        // check for waiting messages
-        
-        ///LedLine & line = ledLine[i];
-        ofxOscMessage n;
-        n.setAddress("/b");
-        n.addIntArg(int(dither));
-        
-        // this code come from ofxOscSender::sendMessage in ofxOscSender.cpp
-        static const int OUTPUT_BUFFER_SIZE = 16384;
-        char buffer[OUTPUT_BUFFER_SIZE];
-        osc::OutboundPacketStream p( buffer, OUTPUT_BUFFER_SIZE );
-        
-        // serialise the message
-        
-        p << osc::BeginBundleImmediate;
-        appendMessage( n, p );
-        p << osc::EndBundle;
-        
-        ofx::IO::ByteBuffer toEncode(p.Data(),p.Size());
-        
-        try {
-          ledLine[i].dev->dev.send(toEncode);
-        } catch ( serial::SerialException e) {
-          ofLogError("sendLine") << "failed to send data : " << e.what();
-          ledLine[i].dev->setup();
-        }
+      
+    ///LedLine & line = ledLine[i];
+    ofxOscMessage n;
+    n.setAddress("/b");
+    n.addIntArg(int(dither));
+    
+    // this code come from ofxOscSender::sendMessage in ofxOscSender.cpp
+    static const int OUTPUT_BUFFER_SIZE = 64;
+    char buffer[OUTPUT_BUFFER_SIZE];
+    osc::OutboundPacketStream p( buffer, OUTPUT_BUFFER_SIZE );
+    
+    // serialise the message
+    
+    p << osc::BeginBundleImmediate;
+    appendMessage( n, p );
+    p << osc::EndBundle;
+    
+    ofx::IO::ByteBuffer toEncode(p.Data(),p.Size());
+    
+    try {
+      ledLine[i].dev->dev.send(toEncode);
+    } catch ( serial::SerialException e) {
+      ofLogError("sendLine") << "failed to send data : " << e.what();
+      ledLine[i].dev->setup();
+    }
+
   
 }
 
@@ -478,9 +504,18 @@ void ofApp::sendLine(int i) {
     ofxOscMessage m;
     m.setAddress(line.address);
     m.addBlobArg(imgAsBuffer);
-    
+/*
+    ofxOscMessage n;
+    n.setAddress(line.address);
+    n.addIntArg(int(line.brightness));
+   
+    ofxOscMessage o;
+    o.setAddress("/b");
+    o.addIntArg(int(dither));
+    */ 
+
     // this code comes from ofxOscSender::sendMessage in ofxOscSender.cpp
-    static const int OUTPUT_BUFFER_SIZE = 16384;
+    static const int OUTPUT_BUFFER_SIZE = 2048;
     char buffer[OUTPUT_BUFFER_SIZE];
     osc::OutboundPacketStream p( buffer, OUTPUT_BUFFER_SIZE );
     
@@ -488,6 +523,8 @@ void ofApp::sendLine(int i) {
 
     p << osc::BeginBundleImmediate;
     appendMessage( m, p );
+    //appendMessage( n, p );
+    //appendMessage( o, p );
     p << osc::EndBundle;
     
     ofx::IO::ByteBuffer toEncode(p.Data(),p.Size());
@@ -607,6 +644,7 @@ void ofApp::launchVideo(int nr){
     playing = 1; 
     trame.play();
     wallInc=lumWallMax/(wallFadeInTime*fps);
+    volInc=1./(wallFadeInTime*fps);
 }
 
 void ofApp::onSerialBuffer(const ofx::IO::SerialBufferEventArgs& args)

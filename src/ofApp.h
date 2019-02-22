@@ -26,7 +26,7 @@ public:
 
     float testingTime {1.};     // Testing time in seconds
 
-    float lumWallMax {0.5};     // Max luminosity of wall's screen
+    float lumWallMax {1.};     // Max luminosity of wall's screen
     float wallFadeInTime {0.5}; // Wall's fade in time
     float wallFadeOutTime {4.}; // Wall's fade out time
      
@@ -35,7 +35,7 @@ public:
 
     float orbBreathePeriod {12.}; // Breathing cycle time of the orb (seconds)
  
-    ofColor orbColor {255, 127, 255, 255};  // orb color (probably RGBA)
+    ofColor orbColor {0, 127, 255, 255};  // orb color (probably RGBA)
 
     /////////////////////////////////////////////////////////////////////
     /////////////////////////////////////////////////////////////////////
@@ -56,6 +56,7 @@ private:
     void makeOrb();
     
     void setWallLum();
+    void setVolume();
     //void setOrbLum();
 
     void getOSC();
@@ -95,7 +96,11 @@ private:
     bool testing {false};
 
     float orbInc = 1./(orbBreathePeriod/2*fps);  
+    float orbMult {1.};
+    float orbMultInc {0.};
+
     float wallInc {0.};
+    float volInc {0.};
 
     int testIndex {0};
     const int numTests = testingTime * fps;
@@ -107,7 +112,8 @@ private:
     
     int sensorValue {0};
     
-    float orbLum {0.}, wallLum {0.} ;
+    float orbLum {0.}, wallLum {0.};
+    float volume {1.};
     
     // Serial stuff:
     std::vector<ofx::IO::SerialDeviceInfo> devicesInfo = ofx::IO::SerialDeviceUtils::listDevices();
