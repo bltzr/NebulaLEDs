@@ -12,7 +12,7 @@ void ofApp::setup(){
     // display
     ofBackground(0,0,0);
     ofSetVerticalSync(true);
-    ofSetFrameRate(30);
+    ofSetFrameRate(fps);
 
     dir.open("/data");
  
@@ -60,9 +60,6 @@ void ofApp::setup(){
     
     //SENSOR SETUP
     sensorDevice.setup(portName("7543536313835101A2D0"), 9600);
-    
-    //serial.startContinuousRead();
-    //ofAddListener(serial.NEW_MESSAGE,this,&ofApp::onNewMessage);
 
 }
 
@@ -72,6 +69,7 @@ void ofApp::update(){
     getOSC();
     getSensor();
     testSensor();
+    updateFades();
     
     if(playing){
         if (waiting || testing){
@@ -85,12 +83,14 @@ void ofApp::update(){
             }
             
         }
-    } /*else {
+    } else {
         pixels.setFromExternalPixels((unsigned char*)NetBuffer.getData(), 66, 22, 3);
         for (int i=0; i<6; i++) {
             sendLine(i);
         }
-    }*/
+    }
+
+    
     
 }
 
@@ -110,7 +110,7 @@ void ofApp::testSensor(){
 
         testIndex++;
         testValue+=sensorValue;
-        ofLog() << "testing start, value= " << sensorValue ; 
+        //ofLog() << "testing start, value= " << sensorValue ; 
 
         if (testIndex>numTests){
 
@@ -156,22 +156,40 @@ void ofApp::testSensor(){
 
     } 
 
-    else if ( sensorValue < 8 && !waiting && !testing){
+    else if (sensorValue < 8 && !waiting && !testing){
         testIndex++;
-        ofLog() << "testing stop, value= " << sensorValue ; 
+        //ofLog() << "testing stop, value= " << sensorValue ; 
+        wallInc=-(lumWallMax/(wallFadeOutTime*fps));
 
-        if (testIndex>numTests){
+        //if (testIndex>numTests){
+        if (wallLum<=0.){
             ofLog() << "stopping, value= " << sensorValue ; 
             trame.stop();
             waiting=true;
             testIndex=0;
             wallLum=0.;
             setWallLum();
-            testIndex = 0;
         }
     }
 
-    else if ( sensorValue >= 8 && !waiting && !testing) testIndex = 0;
+    else if (sensorValue >= 8 && !waiting && !testing) {
+        testIndex = 0;
+        wallInc=lumWallMax/(wallFadeInTime*fps);
+    }
+}
+
+//--------------------------------------------------------------
+
+void ofApp::updateFades(){
+
+    if (wallInc) {
+        if ( (wallInc<0. && wallLum > 0.) || (wallInc>0. && wallLum <lumWallMax) ){
+            wallLum+=wallInc;
+            ofLog() << "luminosity: " << wallLum << " / Inc: " << wallInc;
+            setWallLum();
+        }
+    }
+
 }
 
 
@@ -367,6 +385,9 @@ void ofApp::makeOrb(){
 
 void ofApp::setWallLum(){
     //  Wall brightness
+    if (wallLum<0.) {wallLum=0.; wallInc=0;}
+    else if (wallLum>lumWallMax) {wallLum=lumWallMax; wallInc=0;}
+
     int lum = int(wallLum * 1041.);
     uint8_t br = bright[lum];
     uint8_t di = dither[lum];
@@ -384,9 +405,9 @@ void ofApp::setBrightness(int i, uint8_t brightness) {
 
     // check for waiting messages
     
-        LedLine line = ledLine[i];
+        //LedLine & line = ledLine[i];
         ofxOscMessage n;
-        n.setAddress(line.address);
+        n.setAddress(ledLine[i].address);
         n.addIntArg(int(brightness));
         
         // this code come from ofxOscSender::sendMessage in ofxOscSender.cpp
@@ -403,10 +424,10 @@ void ofApp::setBrightness(int i, uint8_t brightness) {
         ofx::IO::ByteBuffer toEncode(p.Data(),p.Size());
         
         try {
-            line.dev->dev.send(toEncode);
+            ledLine[i].dev->dev.send(toEncode);
         } catch ( serial::SerialException e) {
             ofLogError("sendLine") << "failed to send data : " << e.what();
-            line.dev->setup();
+            ledLine[i].dev->setup();
         }
 }
 
@@ -414,7 +435,7 @@ void ofApp::setDither(int i, uint8_t dither) {
   
         // check for waiting messages
         
-        LedLine line = ledLine[i];
+        ///LedLine & line = ledLine[i];
         ofxOscMessage n;
         n.setAddress("/b");
         n.addIntArg(int(dither));
@@ -433,10 +454,10 @@ void ofApp::setDither(int i, uint8_t dither) {
         ofx::IO::ByteBuffer toEncode(p.Data(),p.Size());
         
         try {
-          line.dev->dev.send(toEncode);
+          ledLine[i].dev->dev.send(toEncode);
         } catch ( serial::SerialException e) {
           ofLogError("sendLine") << "failed to send data : " << e.what();
-          line.dev->setup();
+          ledLine[i].dev->setup();
         }
   
 }
@@ -585,8 +606,7 @@ void ofApp::launchVideo(int nr){
     trame.setLoopState(OF_LOOP_NONE);
     playing = 1; 
     trame.play();
-    wallLum=1.;
-    setWallLum();
+    wallInc=lumWallMax/(wallFadeInTime*fps);
 }
 
 void ofApp::onSerialBuffer(const ofx::IO::SerialBufferEventArgs& args)
