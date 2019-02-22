@@ -1,7 +1,7 @@
 #pragma once
 
 #include "utils.hpp"
-#include "ofxSimpleSerial.h"
+//#include "ofxSimpleSerial.h"
 //#include "ofxSyphon.h"
 #define PORTIN 98765
 #define NUM_MSG_STRINGS 20
@@ -45,7 +45,7 @@ private:
    
     ofDirectory dir;
     
-    ofxSimpleSerial serial;
+    ofx::IO::SerialDevice sensorDevice;
 
     ofPixels pixels, pixOrb;
     

@@ -123,10 +123,10 @@ for(int i = 0; i < dir.size(); i++){
     }
     
     //SENSOR SETUP
-    serial.setup(portName("7543536313835101A2D0"), 9600);
+    sensorDevice.setup(portName("7543536313835101A2D0"), 9600);
     
-    serial.startContinuousRead();
-    ofAddListener(serial.NEW_MESSAGE,this,&ofApp::onNewMessage);
+    //serial.startContinuousRead();
+    //ofAddListener(serial.NEW_MESSAGE,this,&ofApp::onNewMessage);
 
 }
 
@@ -200,8 +200,36 @@ void ofApp::update(){
         
     }
   
-    serial.sendRequest();
-    //testSensor();
+     try
+    {
+        // Read all bytes from the device;
+        uint8_t buffer[1024];
+
+        while (sensorDevice.available() > 0)
+        {
+            std::size_t sz = sensorDevice.readBytes(buffer, 1024);
+            if (sz >2) {
+                int exp = 1;
+                int value = 0; 
+
+                for (std::size_t i = 0 ; i < sz - 2; ++i)
+                {   
+                    value += (int(buffer[sz-3-i])-48) * exp;
+                    exp *= 10;
+                }
+                sensorValue = value; 
+                //ofLog()  << "value: " << sensorValue ;
+            }
+        }
+
+    }
+    catch (const std::exception& exc)
+    {
+        ofLogError("ofApp::update") << exc.what();
+    }
+
+    //serial.sendRequest();
+    testSensor();
     
     if(playing){
         if (waiting){
@@ -483,7 +511,7 @@ void ofApp::onSerialBuffer(const ofx::IO::SerialBufferEventArgs& args)
     SerialMessage message(args.getBuffer().toString(), "", 255);
     serialMessages.push_back(message);
     
-    // ofLogNotice("onSerialBuffer") << "got serial buffer : " << message.message;
+    ofLogNotice("onSerialBuffer") << "got serial buffer : " << message.message;
 }
 
 
