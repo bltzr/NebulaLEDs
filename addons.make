@@ -1,4 +1,5 @@
+ofxAnimatable
 ofxIO
 ofxOsc
 ofxSerial
-ofxAnimatable
+ofxSimpleSerial

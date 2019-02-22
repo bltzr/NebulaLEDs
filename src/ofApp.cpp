@@ -46,6 +46,7 @@ for(int i = 0; i < dir.size(); i++){
     
     // setup Serial
     
+    
     ofLogNotice("ofApp::setup") << "Connected Devices: ";
     for (auto d : devicesInfo) ofLogNotice("ofApp::setup") << d;
     
@@ -120,6 +121,12 @@ for(int i = 0; i < dir.size(); i++){
     for (int i=0; i<7; i++) {
         ledLine[i].setup();
     }
+    
+    //SENSOR SETUP
+    serial.setup(portName(7543536313835101A2D0), 9600);
+    
+    serial.startContinuousRead();
+    ofAddListener(serial.NEW_MESSAGE,this,&ofApp::onNewMessage);
 
 }
 
@@ -193,6 +200,7 @@ void ofApp::update(){
         
     }
   
+    serial.sendRequest();
     //testSensor();
     
     if(playing){
@@ -449,6 +457,23 @@ std::string ofApp::portName(int SN)
         }
     }
     return "";
+}
+
+std::string ofApp::portName(std::string SN)
+{
+    for (const auto& devInfo : devicesInfo){
+        if ((devInfo.getHardwareId().find((SN)))<200){
+            cout << "found: " << devInfo.getPort() << endl;
+            return devInfo.getPort();
+        }
+    }
+    return "";
+}
+
+void ofApp::onNewMessage(string & message)
+{
+    cout << "onNewMessage, message: " << message << "\n";
+    
 }
 
 
