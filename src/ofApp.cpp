@@ -264,9 +264,12 @@ void ofApp::testSensor(){
 
     else if ( sensorValue >= 8 && !waiting && testing){
         testIndex++;
+        testValue+=sensorValue;
         ofLog() << "testing start, value= " << sensorValue ; 
 
         if (testIndex>numTests){
+
+            testValue/=testIndex;
 
 /////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////
@@ -275,25 +278,26 @@ void ofApp::testSensor(){
 
         // RANGES FOR LAUNCHING VIDEOS
 
-            if (sensorValue>20 && sensorValue<80) 
+            if (testValue>20 && testValue<80) 
                 launchVideo(0);
             
-            else if (sensorValue>=80 && sensorValue<140) 
+            else if (testValue>=80 && testValue<140) 
                 launchVideo(1);
 
-            else if (sensorValue>=140) 
+            else if (testValue>=140) 
                 launchVideo(2);
 
         // ^^^
         // Change values (add else-if's if necessary)
         // on the pi:
             // sudo killall NebulaLEDs
-            // ./remount-rw.sh
+            // ./remount-rw.sh (if you haven't already)
 
-            // DO MODIFICATIONS 
-            
+            // DO MODIFICATIONS AND SAVE 
+
             // cd of_v0.9.8_linuxarmv6l_release/apps/myApps/NebulaLEDs
             // make -j4
+            // ./bin/NebulaLEDs
 
 /////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////

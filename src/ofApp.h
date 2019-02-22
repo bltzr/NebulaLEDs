@@ -69,6 +69,7 @@ private:
 
     int testIndex {0};
     int numTests {25};
+    int testValue {0};
     
     int width {66}, height {22};
     int OrbSize {6};
