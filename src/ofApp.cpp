@@ -208,6 +208,7 @@ void ofApp::update(){
         while (sensorDevice.available() > 0)
         {
             std::size_t sz = sensorDevice.readBytes(buffer, 1024);
+
             if (sz >2) {
                 int exp = 1;
                 int value = 0; 
@@ -232,7 +233,7 @@ void ofApp::update(){
     testSensor();
     
     if(playing){
-        if (waiting){
+        if (waiting || testing){
             orbBreathe();
             sendLine(6);
         } else {
@@ -243,25 +244,82 @@ void ofApp::update(){
             }
             
         }
-    } else {
+    } /*else {
         pixels.setFromExternalPixels((unsigned char*)NetBuffer.getData(), 66, 22, 3);
         for (int i=0; i<6; i++) {
             sendLine(i);
         }
-    }
+    }*/
 }
 
 void ofApp::testSensor(){
-    if (sensorValue >= 8 && waiting) {
+
+    if (sensorValue >= 8 && waiting && !testing ) {
         trame.play();
         waiting=false;
-        wallLum=1.;
-        setWallLum();
-    } else if ( sensorValue < 8 && !waiting ){
-        trame.stop();
-        waiting=true;
+        testing=true;
         wallLum=0.;
         setWallLum();
+    }
+
+    else if ( sensorValue >= 8 && !waiting && testing){
+        testIndex++;
+        ofLog() << "testing start, value= " << sensorValue ; 
+
+        if (testIndex>numTests){
+
+/////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////        
+/////////////////////////////////////////////////////////////////////
+
+        // RANGES FOR LAUNCHING VIDEOS
+
+            if (sensorValue>20 && sensorValue<80) 
+                launchVideo(0);
+            
+            else if (sensorValue>=80 && sensorValue<140) 
+                launchVideo(1);
+
+            else if (sensorValue>=140) 
+                launchVideo(2);
+
+        // ^^^
+        // Change values (add else-if's if necessary)
+        // on the pi:
+            // sudo killall NebulaLEDs
+            // ./remount-rw.sh
+
+            // DO MODIFICATIONS 
+            
+            // cd of_v0.9.8_linuxarmv6l_release/apps/myApps/NebulaLEDs
+            // make -j4
+
+/////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////
+            
+            testing=false;
+            testIndex = 0;
+
+        }
+
+    } 
+
+    else if ( sensorValue < 8 && !waiting && !testing){
+        testIndex++;
+        ofLog() << "testing stop, value= " << sensorValue ; 
+
+        if (testIndex>numTests){
+            ofLog() << "stopping, value= " << sensorValue ; 
+            trame.stop();
+            waiting=true;
+            testIndex=0;
+            wallLum=0.;
+            setWallLum();
+            testIndex = 0;
+        }
     }
 }
 
@@ -498,12 +556,14 @@ std::string ofApp::portName(std::string SN)
     return "";
 }
 
-void ofApp::onNewMessage(string & message)
-{
-    cout << "onNewMessage, message: " << message << "\n";
-    
+void ofApp::launchVideo(int nr){
+    trame.load(dir.getPath(ofRandom(nr)));
+    trame.setLoopState(OF_LOOP_NONE);
+    playing = 1; 
+    trame.play();
+    wallLum=1.;
+    setWallLum();
 }
-
 
 void ofApp::onSerialBuffer(const ofx::IO::SerialBufferEventArgs& args)
 {
