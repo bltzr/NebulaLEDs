@@ -33,9 +33,9 @@ public:
     float wallFadeOutTime {4.}; // Wall's fade out time
      
     float orbMin {0.1};         // Minimum luminosity of orb breathing
-    float orbMax {0.8};          // Maximum luminosity of orb breathing
+    float orbMax {0.6};          // Maximum luminosity of orb breathing
 
-    float orbBreathePeriod {12.}; // Breathing cycle time of the orb (seconds)
+    float orbBreathePeriod {10.}; // Breathing cycle time of the orb (seconds)
  
     ofColor orbColor {0, 127, 255, 255};  // orb color (probably RGBA)
 
