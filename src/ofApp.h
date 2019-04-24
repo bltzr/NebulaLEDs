@@ -4,10 +4,12 @@
 //#include "ofxSyphon.h"
 #include "ofxSerial.h"
 #include "ofxOsc.h"
+//#include "ofxLibwebsockets.h"
 #define HOST "Nebula.local"
 #define PORT 12345
 #define PORTIN 98765
 #define NUM_MSG_STRINGS 20
+#define PLANETS_PORTIN 98765
 
 
 class SerialMessage
@@ -69,7 +71,7 @@ class ofApp : public ofBaseApp {
 		void setup();
 		void update();
 		void draw();
-    void exit();
+        void exit();
     
         //ofFbo fbo, fboTour;
         ofPixels pixels, pixTour, PWMPix, BrightPix;
@@ -77,15 +79,18 @@ class ofApp : public ofBaseApp {
         //ofxSyphonClient mClient, tClient;
   
         ofVideoPlayer trame;
-        ofxOscSender sender;
+        ofxOscSender sender, eclipse, shadow;
         ofxOscReceiver receiver;
+    
+        //ofxLibwebsockets::Server server;
   
         ofBuffer imgAsBuffer, NetBuffer, PWMBuffer, BrightBuffer;
   
         ofImage img, PWMimg, Brightimg;
         unsigned char * Brights, * DMX, * NET;
   
-        int playing = 1;
+        int     playing = 1;
+        float   position = 0.;
   
         //string host = "Nebula.local";
         int width = 45, height = 45, DMXchannels = 64;
@@ -96,8 +101,12 @@ class ofApp : public ofBaseApp {
         void onSerialError(const ofx::IO::SerialBufferErrorEventArgs& args);
         void sendLine(int i);
         void sendDMX();
+        void sendPosition();
         void setBrightness(int line, int brightness);
         void setDither(int line, int dither);
+    
+        // websocket methods
+        //void onMessage( ofxLibwebsockets::Event& args );
   
         Teensy device, device2, device3, device4;
     

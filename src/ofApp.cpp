@@ -27,7 +27,15 @@ void ofApp::setup(){
       sender.setup(HOST, PORT);
       ofLog() << "Opened OSC Sender";
     }
-  
+    
+    eclipse.setup("eclipse.local", PLANETS_PORTIN);
+    //shadow.setup("shadow.local", PLANETS_PORTIN);
+    
+    ofxOscMessage m;
+    m.setAddress("/pause");
+    m.addIntArg(1);
+    eclipse.sendMessage(m);
+    //shadow.sendMessage(m);
 
     NetBuffer.allocate(width*height*3);
     for (int i=0;i<width*height*3;i++) NetBuffer.getData()[i] = 0;
@@ -35,7 +43,7 @@ void ofApp::setup(){
   
     if(playing){
       trame.play();
-      }
+    }
   
     
     // setup Serial
@@ -143,7 +151,7 @@ void ofApp::update(){
       }
       
       if(m.getAddress() == "/position"){
-        ofLog() << "position" << m.getArgAsFloat(0);
+        ofLog() << "received position " << m.getArgAsFloat(0);
         trame.setPosition(m.getArgAsFloat(0));
    
       }
@@ -215,8 +223,7 @@ void ofApp::update(){
         // TODO: fill pixels with the Network Data
         }
 
-  
-        
+    
     // get part of the image for the PWMs
     //ofPixels PWMPix;
     pixels.cropTo(PWMPix, 0, 42, 22, 1);
@@ -281,6 +288,10 @@ void ofApp::update(){
     for (int i=0; i<7; i++) {
         sendLine(i);
         }
+    
+    if(playing){
+        sendPosition();
+    }
 
 }
 
@@ -380,6 +391,19 @@ void ofApp::sendDMX() {
     }
   
   
+}
+
+//--------------------------------------------------------------
+void ofApp::sendPosition(){
+    
+    position = trame.getPosition();
+    
+    ofxOscMessage m;
+    m.setAddress("/position");
+    m.addFloatArg(position);
+    
+    eclipse.sendMessage(m);
+    //shadow.sendMessage(m);
 }
 
 //--------------------------------------------------------------
