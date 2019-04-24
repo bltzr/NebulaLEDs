@@ -96,6 +96,8 @@ class ofApp : public ofBaseApp {
         int width = 45, height = 45, DMXchannels = 64;
 
         bool send = 0;
+        bool bSetup;
+        bool stop =0;
   
         void onSerialBuffer(const ofx::IO::SerialBufferEventArgs& args);
         void onSerialError(const ofx::IO::SerialBufferErrorEventArgs& args);
@@ -104,9 +106,14 @@ class ofApp : public ofBaseApp {
         void sendPosition();
         void setBrightness(int line, int brightness);
         void setDither(int line, int dither);
+        void cleanAll();    
     
         // websocket methods
         void onMessage( ofxLibwebsockets::Event& args );
+        void onConnect( ofxLibwebsockets::Event& args );
+        void onOpen( ofxLibwebsockets::Event& args );
+        void onClose( ofxLibwebsockets::Event& args );
+        void onIdle( ofxLibwebsockets::Event& args );
   
         Teensy device, device2, device3, device4;
     

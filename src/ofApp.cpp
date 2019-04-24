@@ -9,6 +9,14 @@ void ofApp::setup(){
     receiver.setup(PORTIN);
     ofLog() << "Opened OSC Receiver";
   
+    // websocket stuff
+    ofxLibwebsockets::ServerOptions options = ofxLibwebsockets::defaultServerOptions();
+    options.port = 80;
+    options.bUseSSL = false; // you'll have to manually accept this self-signed cert if 'true'!
+    bSetup = server.setup( options );
+    
+    // this adds your app as a listener for the server
+    server.addListener(this);
     
     // display
     ofBackground(0,0,0);
@@ -140,7 +148,10 @@ void ofApp::update(){
         if(m.getAddress() == "/play"){
           ofLog() << "play" << m.getArgAsInt32(0);
           if(m.getArgAsBool(0)){trame.play(); playing = 1;}
-          else if(!m.getArgAsBool(0)){trame.stop(); playing = 0; for (int i=0;i<width*height*3;i++) NetBuffer.getData()[i] = 0;}
+          else if(!m.getArgAsBool(0)){
+              trame.stop(); stop = 1;
+              cleanAll();
+          }
         }
       
       if(m.getAddress() == "/pause"){
@@ -291,6 +302,11 @@ void ofApp::update(){
     
     if(playing){
         sendPosition();
+        if (stop) {
+            playing = 0;
+            stop = 0;
+            cleanAll();
+        }
     }
 
 }
@@ -397,6 +413,7 @@ void ofApp::sendDMX() {
 void ofApp::sendPosition(){
     
     position = trame.getPosition();
+    ofLog() << "position: " << position;
     
     ofxOscMessage m;
     m.setAddress("/position");
@@ -442,7 +459,48 @@ void ofApp::sendLine(int i) {
     }
 }
 
+//--------------------------------------------------------------
+void ofApp::onMessage( ofxLibwebsockets::Event& args ){
+    cout<<"got message "<<args.message<<endl;
+    
+    // trace out string messages or JSON messages!
+    if ( !args.json.is_null() ){
+        //ofLog() << "New raw message: " << args.json.dump(4) << " from " + args.conn.getClientName() ;
+        if (args.json.dump(4) == "true"){
+            trame.setPosition(0.);
+            trame.play(); playing = 1;
+        } else if (args.json.dump(4) == "false") {
+            trame.stop(); stop = 1;
+        }
+    } else {
+        ofLog() << "New message wirh JSON: " << args.message << " from " + args.conn.getClientName();
+    }
+    
+    // echo server = send message right back!
+    //args.conn.send( args.message );
+}
 
+//--------------------------------------------------------------
+void ofApp::onConnect( ofxLibwebsockets::Event& args ){
+    cout<<"on connected"<<endl;
+}
+
+//--------------------------------------------------------------
+void ofApp::onOpen( ofxLibwebsockets::Event& args ){
+    cout<<"new connection open"<<endl;
+    //messages.push_back("New connection from " + args.conn.getClientIP() + ", " + args.conn.getClientName() );
+}
+
+//--------------------------------------------------------------
+void ofApp::onClose( ofxLibwebsockets::Event& args ){
+    cout<<"on close"<<endl;
+    //messages.push_back("Connection closed");
+}
+
+//--------------------------------------------------------------
+void ofApp::onIdle( ofxLibwebsockets::Event& args ){
+    cout<<"on idle"<<endl;
+}
 
 //-------------------------------------------------------------
 void ofApp::draw(){
@@ -483,53 +541,57 @@ void ofApp::draw(){
 //-------------------------------------------------------------
 void ofApp::exit(){
 
-  playing = 0;
-  for (int i=0;i<width*height*3;i++) NetBuffer.getData()[i] = 0;
-  
-  pixels.setFromExternalPixels((unsigned char*)NetBuffer.getData(), 45, 45, 3);
-  // TODO: fill pixels with the Network Data
-
-
-  // get part of the image for the PWMs
-  //ofPixels PWMPix;
-  pixels.cropTo(PWMPix, 0, 42, 22, 1);
-  DMX = PWMPix.getData();
-  //ofLog() << "DMX: " << DMX << "_";
-  sendDMX();
-  
-  // get part of the image for the Brightnesses
-  //ofPixels BrightPix;
-  pixels.cropTo(BrightPix, 41, 42, 4, 1);
-  Brights = BrightPix.getData();
-  // /d - Fond dither
-  for (int i=0; i<6; i++){
-    setDither(i, (int)Brights[0]);
-  }
-  //ofLog() << "d" <<  (int)Brights[0];
-  
-  // /b - Fond brightness
-  for (int i=0; i<6; i++){
-    setBrightness(i, (int)Brights[3]/8);
-  }
-  //ofLog() << "b" << (int)Brights[3]/8;
-  
-  // /dt - Tour dither
-  setDither(6, Brights[6]);
-  //ofLog() << "dt" <<  (int)Brights[6];
-  
-  // /bt - Tour dither
-  setBrightness(6, (int)Brights[9]/8);
-  //ofLog() << "bt" << (int)Brights[9]/8;
-
-  
-  for (int i=0; i<7; i++) {
-    sendLine(i);
-  }
-  
+    playing = 0;
+    cleanAll();
   
 }
 
 //-------------------------------------------------------------
+
+void ofApp::cleanAll(){
+    
+    for (int i=0;i<width*height*3;i++) NetBuffer.getData()[i] = 0;
+    
+    pixels.setFromExternalPixels((unsigned char*)NetBuffer.getData(), 45, 45, 3);
+    // TODO: fill pixels with the Network Data
+    
+    
+    // get part of the image for the PWMs
+    //ofPixels PWMPix;
+    pixels.cropTo(PWMPix, 0, 42, 22, 1);
+    DMX = PWMPix.getData();
+    //ofLog() << "DMX: " << DMX << "_";
+    sendDMX();
+    
+    // get part of the image for the Brightnesses
+    //ofPixels BrightPix;
+    pixels.cropTo(BrightPix, 41, 42, 4, 1);
+    Brights = BrightPix.getData();
+    // /d - Fond dither
+    for (int i=0; i<6; i++){
+        setDither(i, (int)Brights[0]);
+    }
+    //ofLog() << "d" <<  (int)Brights[0];
+    
+    // /b - Fond brightness
+    for (int i=0; i<6; i++){
+        setBrightness(i, (int)Brights[3]/8);
+    }
+    //ofLog() << "b" << (int)Brights[3]/8;
+    
+    // /dt - Tour dither
+    setDither(6, Brights[6]);
+    //ofLog() << "dt" <<  (int)Brights[6];
+    
+    // /bt - Tour dither
+    setBrightness(6, (int)Brights[9]/8);
+    //ofLog() << "bt" << (int)Brights[9]/8;
+    
+    
+    for (int i=0; i<7; i++) {
+        sendLine(i);
+    }
+}
 //-------------------------------------------------------------
 
 
@@ -571,8 +633,8 @@ void ofApp::appendMessage( ofxOscMessage& message, osc::OutboundPacketStream& p 
 			p << message.getArgAsString( i ).c_str();
 		else if ( message.getArgType( i ) == OFXOSC_TYPE_CHAR )
 			p << message.getArgAsChar( i );
-		else if ( message.getArgType( i ) == OFXOSC_TYPE_MIDI_MESSAGE )
-			p << message.getArgAsMidiMessage( i );
+		//else if ( message.getArgType( i ) == OFXOSC_TYPE_MIDI_MESSAGE )
+			//p << message.getArgAsMidiMessage( i );
 		else if ( message.getArgType( i ) == OFXOSC_TYPE_TRUE || message.getArgType( i ) == OFXOSC_TYPE_FALSE )
 			p << message.getArgAsBool( i );
 		else if ( message.getArgType( i ) == OFXOSC_TYPE_TRIGGER )
