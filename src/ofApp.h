@@ -4,7 +4,7 @@
 //#include "ofxSyphon.h"
 #include "ofxSerial.h"
 #include "ofxOsc.h"
-//#include "ofxLibwebsockets.h"
+#include "ofxLibwebsockets.h"
 #define HOST "Nebula.local"
 #define PORT 12345
 #define PORTIN 98765
@@ -82,7 +82,7 @@ class ofApp : public ofBaseApp {
         ofxOscSender sender, eclipse, shadow;
         ofxOscReceiver receiver;
     
-        //ofxLibwebsockets::Server server;
+        ofxLibwebsockets::Server server;
   
         ofBuffer imgAsBuffer, NetBuffer, PWMBuffer, BrightBuffer;
   
@@ -106,7 +106,7 @@ class ofApp : public ofBaseApp {
         void setDither(int line, int dither);
     
         // websocket methods
-        //void onMessage( ofxLibwebsockets::Event& args );
+        void onMessage( ofxLibwebsockets::Event& args );
   
         Teensy device, device2, device3, device4;
     

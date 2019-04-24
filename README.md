@@ -11,3 +11,18 @@ Some ofAddons are necessary to build this app:
 - https://github.com/avilleret/ofxSerial.git - on the feature/SLIPSerialExample branch
 - https://github.com/bakercp/ofxIO.git (on branch stable)
 
+
+* WebSocket lib:
+
+
+```
+brew install openssl
+
+cd /path/to/libwebsockets
+mkdir build
+cd build
+cmake "-DCMAKE_OSX_ARCHITECTURES=x86_64" ..
+cmake -DOPENSSL_ROOT_DIR=/usr/local/opt/openssl -DOPENSSL_LIBRARIES=/usr/local/opt/openssl/lib ..
+make
+cmake -DCMAKE_INSTALL_PREFIX:PATH=./install . && make install
+```
