@@ -79,7 +79,7 @@ class ofApp : public ofBaseApp {
         //ofxSyphonClient mClient, tClient;
   
         ofVideoPlayer trame;
-        ofxOscSender sender, eclipse, shadow;
+        ofxOscSender sender, eclipse, planet;
         ofxOscReceiver receiver;
     
         ofxLibwebsockets::Server server;

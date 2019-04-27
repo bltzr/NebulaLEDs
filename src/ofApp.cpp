@@ -37,13 +37,13 @@ void ofApp::setup(){
     }
     
     eclipse.setup("eclipse.local", PLANETS_PORTIN);
-    //shadow.setup("shadow.local", PLANETS_PORTIN);
+    planet.setup("planet.local", PLANETS_PORTIN);
     
     ofxOscMessage m;
     m.setAddress("/pause");
     m.addIntArg(1);
     eclipse.sendMessage(m);
-    //shadow.sendMessage(m);
+    planet.sendMessage(m);
 
     NetBuffer.allocate(width*height*3);
     for (int i=0;i<width*height*3;i++) NetBuffer.getData()[i] = 0;
@@ -154,14 +154,13 @@ void ofApp::update(){
           }
         }
       
-      if(m.getAddress() == "/pause"){
+      if(m.getAddress() == "/pause/main"){
         ofLog() << "pause" << m.getArgAsInt32(0);
         if(m.getArgAsBool(0)){trame.setPaused(1);}
-        
-        else if(!m.getArgAsBool(0)){trame.setPaused(1);}
+        else if(!m.getArgAsBool(0)){trame.setPaused(0);}
       }
       
-      if(m.getAddress() == "/position"){
+      if(m.getAddress() == "/position/main"){
         ofLog() << "received position " << m.getArgAsFloat(0);
         trame.setPosition(m.getArgAsFloat(0));
    
@@ -413,14 +412,14 @@ void ofApp::sendDMX() {
 void ofApp::sendPosition(){
     
     position = trame.getPosition();
-    ofLog() << "position: " << position;
+    //ofLog() << "position: " << position;
     
     ofxOscMessage m;
     m.setAddress("/position");
     m.addFloatArg(position);
     
     eclipse.sendMessage(m);
-    //shadow.sendMessage(m);
+    planet.sendMessage(m);
 }
 
 //--------------------------------------------------------------

@@ -1,5 +1,5 @@
 ofxPoco
 ofxIO
-ofxLibwebsockets
 ofxOsc
 ofxSerial
+ofxLibwebsockets
