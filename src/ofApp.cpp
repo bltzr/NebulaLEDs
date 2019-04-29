@@ -77,12 +77,12 @@ void ofApp::setup(){
     ofLogNotice("ofApp::setup") << "\t" << device;
   }
 
-    device.name = "/dev/cu.usbmodem1369841";
-    device2.name = "/dev/cu.usbmodem1455771";
-    device3.name = "/dev/cu.usbmodem1383111";
+    device.name = portName(1369841);
+    device2.name = portName(1455771);
+    device3.name = portName(1383111);
     //device4.name = "/dev/cu.usbmodem1366241";
     //device4.name = "/dev/cu.usbmodem1365391";
-    device4.name = "/dev/cu.usbmodem4115521";
+    device4.name = portName(4115521);
 
     device.setup();
     device2.setup();

@@ -126,7 +126,20 @@ public:
 private:
     void appendMessage( ofxOscMessage& message, osc::OutboundPacketStream& p );
 
-
+    /// TODO: move this in the appropriate class
+    std::vector<ofx::IO::SerialDeviceInfo> devicesInfo;
+    std::string portName(int SN)
+    {
+        for (const ofx::IO::SerialDeviceInfo& devInfo : devicesInfo){
+            cout << "for " << devInfo.getHardwareId() << ": " << (std::to_string(SN)) << " -> find: " << devInfo.getHardwareId().find((std::to_string(SN))) << endl;
+            if ((devInfo.getHardwareId().find((std::to_string(SN))))<60){
+                cout << "found: " << devInfo.getPort() << endl;
+                return devInfo.getPort();
+            }
+        }
+        return "";
+    }
+    // ^
 
 
 };
