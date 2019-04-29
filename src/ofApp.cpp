@@ -27,6 +27,27 @@ void ofApp::setup(){
       ofLog() << "Opened OSC Sender";
     }
     
+    //WS server setup
+    ofx::HTTP::JSONRPCServerSettings settings;
+    settings.setPort(80);
+    
+    // Initialize the server.
+    server.setup(settings);
+    
+    server.registerMethod("play",
+                          "Play the piece",
+                          this,
+                          &ofApp::play);
+    
+    server.registerMethod("stop",
+                          "Stop the piece",
+                          this,
+                          &ofApp::stop);
+    
+    // Start the server.
+    server.start();
+    
+    // planets senders setups
     eclipse.setup("eclipse.local", PLANETS_PORTIN);
     planet.setup("planet.local", PLANETS_PORTIN);
     
@@ -138,11 +159,8 @@ void ofApp::update(){
       
         if(m.getAddress() == "/play"){
           ofLog() << "play" << m.getArgAsInt32(0);
-          if(m.getArgAsBool(0)){trame.play(); playing = 1;}
-          else if(!m.getArgAsBool(0)){
-              trame.stop(); stop = 1;
-              cleanAll();
-          }
+          if(m.getArgAsBool(0)){play();}
+          else if(!m.getArgAsBool(0)){stop();}
         }
       
       if(m.getAddress() == "/pause/main"){
@@ -292,14 +310,31 @@ void ofApp::update(){
     
     if(playing){
         sendPosition();
-        if (stop) {
+        if (stopping) {
             playing = 0;
-            stop = 0;
+            stopping = 0;
             cleanAll();
         }
     }
 
 }
+
+//--------------------------------------------------------------
+
+void ofApp::play(){
+    trame.play();
+    playing = 1;
+    ofLog() << "play";
+}
+
+void ofApp::stop(){
+    trame.stop();
+    stopping = 1;
+    cleanAll();
+    ofLog() << "stop";
+}
+
+//--------------------------------------------------------------
 
 void ofApp::setBrightness(int i, int brightness) {
 
@@ -490,8 +525,7 @@ void ofApp::draw(){
 //-------------------------------------------------------------
 void ofApp::exit(){
 
-    playing = 0;
-    cleanAll();
+    stop();
   
 }
 
