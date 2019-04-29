@@ -9,15 +9,6 @@ void ofApp::setup(){
     receiver.setup(PORTIN);
     ofLog() << "Opened OSC Receiver";
   
-    // websocket stuff
-    ofxLibwebsockets::ServerOptions options = ofxLibwebsockets::defaultServerOptions();
-    options.port = 8080;
-    options.bUseSSL = false; // you'll have to manually accept this self-signed cert if 'true'!
-    bSetup = server.setup( options );
-    
-    // this adds your app as a listener for the server
-    server.addListener(this);
-    
     // display
     ofBackground(0,0,0);
     ofSetVerticalSync(true);
@@ -36,6 +27,27 @@ void ofApp::setup(){
       ofLog() << "Opened OSC Sender";
     }
     
+    //WS server setup
+    ofx::HTTP::JSONRPCServerSettings settings;
+    settings.setPort(80);
+    
+    // Initialize the server.
+    server.setup(settings);
+    
+    server.registerMethod("play",
+                          "Play the piece",
+                          this,
+                          &ofApp::play);
+    
+    server.registerMethod("stop",
+                          "Stop the piece",
+                          this,
+                          &ofApp::stop);
+    
+    // Start the server.
+    server.start();
+    
+    // planets senders setups
     eclipse.setup("eclipse.local", PLANETS_PORTIN);
     planet.setup("planet.local", PLANETS_PORTIN);
     
@@ -151,11 +163,8 @@ void ofApp::update(){
       
         if(m.getAddress() == "/play"){
           ofLog() << "play" << m.getArgAsInt32(0);
-          if(m.getArgAsBool(0)){trame.play(); playing = 1;}
-          else if(!m.getArgAsBool(0)){
-              trame.stop(); stop = 1;
-              cleanAll();
-          }
+          if(m.getArgAsBool(0)){play();}
+          else if(!m.getArgAsBool(0)){stop();}
         }
       
       if(m.getAddress() == "/pause/main"){
@@ -305,14 +314,31 @@ void ofApp::update(){
     
     if(playing){
         sendPosition();
-        if (stop) {
+        if (stopping) {
             playing = 0;
-            stop = 0;
+            stopping = 0;
             cleanAll();
         }
     }
 
 }
+
+//--------------------------------------------------------------
+
+void ofApp::play(){
+    trame.play();
+    playing = 1;
+    ofLog() << "play";
+}
+
+void ofApp::stop(){
+    trame.stop();
+    stopping = 1;
+    cleanAll();
+    ofLog() << "stop";
+}
+
+//--------------------------------------------------------------
 
 void ofApp::setBrightness(int i, int brightness) {
 
@@ -462,48 +488,7 @@ void ofApp::sendLine(int i) {
     }
 }
 
-//--------------------------------------------------------------
-void ofApp::onMessage( ofxLibwebsockets::Event& args ){
-    cout<<"got message "<<args.message<<endl;
-    
-    // trace out string messages or JSON messages!
-    if ( !args.json.is_null() ){
-        //ofLog() << "New raw message: " << args.json.dump(4) << " from " + args.conn.getClientName() ;
-        if (args.json.dump(4) == "true"){
-            trame.setPosition(0.);
-            trame.play(); playing = 1;
-        } else if (args.json.dump(4) == "false") {
-            trame.stop(); stop = 1;
-        }
-    } else {
-        ofLog() << "New message wirh JSON: " << args.message << " from " + args.conn.getClientName();
-    }
-    
-    // echo server = send message right back!
-    //args.conn.send( args.message );
-}
 
-//--------------------------------------------------------------
-void ofApp::onConnect( ofxLibwebsockets::Event& args ){
-    cout<<"on connected"<<endl;
-}
-
-//--------------------------------------------------------------
-void ofApp::onOpen( ofxLibwebsockets::Event& args ){
-    cout<<"new connection open"<<endl;
-    //messages.push_back("New connection from " + args.conn.getClientIP() + ", " + args.conn.getClientName() );
-}
-
-//--------------------------------------------------------------
-void ofApp::onClose( ofxLibwebsockets::Event& args ){
-    cout<<"on close"<<endl;
-    //messages.push_back("Connection closed");
-}
-
-//--------------------------------------------------------------
-void ofApp::onIdle( ofxLibwebsockets::Event& args ){
-    cout<<"on idle"<<endl;
-}
 
 //-------------------------------------------------------------
 void ofApp::draw(){
@@ -544,8 +529,7 @@ void ofApp::draw(){
 //-------------------------------------------------------------
 void ofApp::exit(){
 
-    playing = 0;
-    cleanAll();
+    stop();
   
 }
 
