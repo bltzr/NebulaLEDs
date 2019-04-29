@@ -11,7 +11,7 @@ void ofApp::setup(){
   
     // websocket stuff
     ofxLibwebsockets::ServerOptions options = ofxLibwebsockets::defaultServerOptions();
-    options.port = 80;
+    options.port = 8080;
     options.bUseSSL = false; // you'll have to manually accept this self-signed cert if 'true'!
     bSetup = server.setup( options );
     
@@ -58,15 +58,19 @@ void ofApp::setup(){
     
     std::vector<ofx::IO::SerialDeviceInfo> devicesInfo = ofx::IO::SerialDeviceUtils::listDevices();
     
-    //ofLogNotice("ofApp::setup") << "Connected Devices: ";
+    ofLogNotice("ofApp::setup") << "Connected Devices: " ;
 
+  for (auto& device: ofxIO::SerialDeviceUtils::listDevices())
+  {
+    ofLogNotice("ofApp::setup") << "\t" << device;
+  }
 
     device.name = "/dev/cu.usbmodem1369841";
     device2.name = "/dev/cu.usbmodem1455771";
     device3.name = "/dev/cu.usbmodem1383111";
     //device4.name = "/dev/cu.usbmodem1366241";
-    device4.name = "/dev/cu.usbmodem1365391";
-  
+    //device4.name = "/dev/cu.usbmodem1365391";
+    device4.name = "/dev/cu.usbmodem4115521";
 
     device.setup();
     device2.setup();
