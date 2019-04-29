@@ -9,15 +9,6 @@ void ofApp::setup(){
     receiver.setup(PORTIN);
     ofLog() << "Opened OSC Receiver";
   
-    // websocket stuff
-    ofxLibwebsockets::ServerOptions options = ofxLibwebsockets::defaultServerOptions();
-    options.port = 80;
-    options.bUseSSL = false; // you'll have to manually accept this self-signed cert if 'true'!
-    bSetup = server.setup( options );
-    
-    // this adds your app as a listener for the server
-    server.addListener(this);
-    
     // display
     ofBackground(0,0,0);
     ofSetVerticalSync(true);
@@ -458,48 +449,7 @@ void ofApp::sendLine(int i) {
     }
 }
 
-//--------------------------------------------------------------
-void ofApp::onMessage( ofxLibwebsockets::Event& args ){
-    cout<<"got message "<<args.message<<endl;
-    
-    // trace out string messages or JSON messages!
-    if ( !args.json.is_null() ){
-        //ofLog() << "New raw message: " << args.json.dump(4) << " from " + args.conn.getClientName() ;
-        if (args.json.dump(4) == "true"){
-            trame.setPosition(0.);
-            trame.play(); playing = 1;
-        } else if (args.json.dump(4) == "false") {
-            trame.stop(); stop = 1;
-        }
-    } else {
-        ofLog() << "New message wirh JSON: " << args.message << " from " + args.conn.getClientName();
-    }
-    
-    // echo server = send message right back!
-    //args.conn.send( args.message );
-}
 
-//--------------------------------------------------------------
-void ofApp::onConnect( ofxLibwebsockets::Event& args ){
-    cout<<"on connected"<<endl;
-}
-
-//--------------------------------------------------------------
-void ofApp::onOpen( ofxLibwebsockets::Event& args ){
-    cout<<"new connection open"<<endl;
-    //messages.push_back("New connection from " + args.conn.getClientIP() + ", " + args.conn.getClientName() );
-}
-
-//--------------------------------------------------------------
-void ofApp::onClose( ofxLibwebsockets::Event& args ){
-    cout<<"on close"<<endl;
-    //messages.push_back("Connection closed");
-}
-
-//--------------------------------------------------------------
-void ofApp::onIdle( ofxLibwebsockets::Event& args ){
-    cout<<"on idle"<<endl;
-}
 
 //-------------------------------------------------------------
 void ofApp::draw(){

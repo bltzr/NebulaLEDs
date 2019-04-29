@@ -2,4 +2,3 @@ ofxPoco
 ofxIO
 ofxOsc
 ofxSerial
-ofxLibwebsockets
