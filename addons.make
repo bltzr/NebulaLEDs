@@ -7,3 +7,4 @@ ofxOsc
 ofxPoco
 ofxSSLManager
 ofxSerial
+ofxTime

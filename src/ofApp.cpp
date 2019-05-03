@@ -48,14 +48,17 @@ void ofApp::setup(){
     server.start();
     
     // planets senders setups
-    eclipse.setup("eclipse.local", PLANETS_PORTIN);
-    planet.setup("planet.local", PLANETS_PORTIN);
+    eclipseConnected = eclipse.setup("localhost", PLANETS_PORTIN);
+    ofLog() << "connect eclipse: " << eclipseConnected;
+    planetConnected = planet.setup("planet.local", PLANETS_PORTIN);
+    ofLog() << "connect planet: " << planetConnected;
+    
     
     ofxOscMessage m;
     m.setAddress("/pause");
     m.addIntArg(1);
-    eclipse.sendMessage(m);
-    planet.sendMessage(m);
+    if (eclipseConnected)   eclipse.sendMessage(m);
+    if (planetConnected)    planet.sendMessage(m);
 
     NetBuffer.allocate(width*height*3);
     for (int i=0;i<width*height*3;i++) NetBuffer.getData()[i] = 0;
@@ -63,6 +66,7 @@ void ofApp::setup(){
   
     if(playing){
       trame.play();
+    //trame.setPaused(1);
     }
   
     
@@ -159,6 +163,33 @@ void ofApp::setup(){
 
 //--------------------------------------------------------------
 void ofApp::update(){
+    
+    
+    ++timeCounter;
+    if (timeCounter>3600){
+        Poco::Timestamp now;
+        Poco::LocalDateTime nowLocal(now);
+        const std::string fmt = "%w %H";
+        std::string timeNow = ofxTime::Utils::format(ofxTime::Utils::floor(nowLocal, Poco::Timespan::MINUTES), fmt);
+        currentTime = (int(timeNow[4])-48)*10+int(timeNow[5])-48;
+        std::string currentDay = timeNow.substr (0,3);
+        //ofLog() << "time: " << currentTime;
+        //ofLog() << "day: " << currentDay;
+        bool previousTime = timeToPlay;
+        
+        //___________________________________________________________________
+        // OPENING HOURS:
+        if (currentDay == "Sat") timeToPlay = (currentTime >= 14 && currentTime < 18);
+        else if (currentDay == "Wed" || currentDay == "Thu" || currentDay == "Fri") timeToPlay = (currentTime >= 13 && currentTime < 17);
+        else timeToPlay = 0;
+        //___________________________________________________________________
+        
+        if(timeToPlay!=previousTime){
+            if (timeToPlay&&!playing) play();
+            else if (!timeToPlay&&playing) stop();
+        }
+        timeCounter=0;
+    }
 
 
     while(receiver.hasWaitingMessages()){
@@ -172,25 +203,28 @@ void ofApp::update(){
           else if(!m.getArgAsBool(0)){stop();}
         }
       
-      if(m.getAddress() == "/pause/main"){
-        ofLog() << "pause" << m.getArgAsInt32(0);
-        if(m.getArgAsBool(0)){trame.setPaused(1);}
-        else if(!m.getArgAsBool(0)){trame.setPaused(0);}
-      }
-      
-      if(m.getAddress() == "/position/main"){
-        ofLog() << "received position " << m.getArgAsFloat(0);
-        trame.setPosition(m.getArgAsFloat(0));
-   
-      }
-      
-      if(m.getAddress() == "/speed"){
-        ofLog() << "speed" << m.getArgAsFloat(0);
-        trame.setSpeed(m.getArgAsFloat(0));
-        
-      }
-      
-      else if(m.getAddress() == "/image"){
+        else if(m.getAddress() == "/pause"){
+            ofLog() << "pause" << m.getArgAsInt32(0);
+            if(m.getArgAsBool(0)){trame.setPaused(1);}
+            else if(!m.getArgAsBool(0)){trame.setPaused(0);}
+        }
+
+        else if(m.getAddress() == "/position"){
+            ofLog() << "received position " << m.getArgAsFloat(0);
+            trame.setPosition(m.getArgAsFloat(0));
+        }
+
+        else if(m.getAddress() == "/speed"){
+            ofLog() << "speed" << m.getArgAsFloat(0);
+            trame.setSpeed(m.getArgAsFloat(0));
+        }
+
+        else  if(m.getAddress() == "/host"){
+            ofLog() << "speed" << m.getArgAsString(0);
+            reconnect(m.getArgAsString(0));
+        }
+
+        else if(m.getAddress() == "/image"){
         if (!playing){
             //NetBuffer.clear();
             NetBuffer = m.getArgAsBlob(0);
@@ -201,7 +235,7 @@ void ofApp::update(){
             ofLog() << "image size: " << NetBuffer.size();
             */
           }
-      }
+        }
 
       
         
@@ -235,13 +269,11 @@ void ofApp::update(){
         
     }
   
-   
-      
   
     // get part of the image for the LEDs
       
     if(playing){
- 	    trame.update();
+        trame.update();
         pixels = trame.getPixels();
         //ofLog() << "pixel format: " << pixels.getPixelFormat();
         //LEDs = pixels.getData();
@@ -450,12 +482,13 @@ void ofApp::sendPosition(){
     position = trame.getPosition();
     //ofLog() << "position: " << position;
     
-    ofxOscMessage m;
-    m.setAddress("/position");
-    m.addFloatArg(position);
+        ofxOscMessage m;
+        m.setAddress("/position");
+        m.addFloatArg(position);
     
-    eclipse.sendMessage(m);
-    planet.sendMessage(m);
+    if (eclipseConnected) eclipse.sendMessage(m);
+    if (planetConnected) planet.sendMessage(m);
+
 }
 
 //--------------------------------------------------------------
@@ -494,7 +527,17 @@ void ofApp::sendLine(int i) {
     }
 }
 
+//--------------------------------------------------------------
 
+void ofApp::reconnect(string host){
+    if (host =="eclipse.local") {
+        eclipseConnected = eclipse.setup("localhost", PLANETS_PORTIN);
+        ofLog() << "connect eclipse: " << eclipseConnected;
+    } else  if (host =="planet.local") {
+        planetConnected = planet.setup("planet.local", PLANETS_PORTIN);
+        ofLog() << "connect planet: " << planetConnected;
+    }
+}
 
 //-------------------------------------------------------------
 void ofApp::draw(){
