@@ -48,7 +48,7 @@ void ofApp::setup(){
     server.start();
     
     // planets senders setups
-    eclipseConnected = eclipse.setup("localhost", PLANETS_PORTIN);
+    eclipseConnected = eclipse.setup("eclipse.local", PLANETS_PORTIN);
     ofLog() << "connect eclipse: " << eclipseConnected;
     planetConnected = planet.setup("planet.local", PLANETS_PORTIN);
     ofLog() << "connect planet: " << planetConnected;
