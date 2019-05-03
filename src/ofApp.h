@@ -5,7 +5,8 @@
 #include "ofxSerial.h"
 #include "ofxOsc.h"
 #include "ofxJSONRPC.h"
-#define HOST "Nebula.local"
+#include "ofxTime.h"
+#define HOST "bltzr.local"
 #define PORT 12345
 #define PORTIN 98765
 #define NUM_MSG_STRINGS 20
@@ -83,6 +84,8 @@ public:
 
     ofVideoPlayer trame;
     ofxOscSender sender, eclipse, planet;
+    bool eclipseConnected {false}, planetConnected {false};
+    
     ofxOscReceiver receiver;
 
     /// \brief The server that handles the JSONRPC requests.
@@ -93,8 +96,12 @@ public:
     ofImage img, PWMimg, Brightimg;
     unsigned char * Brights, * DMX, * NET;
 
-    int     playing = 1;
+    int     playing = 0;
     float   position = 0.;
+    
+    int timeCounter{3600};
+    int currentTime{0};
+    bool timeToPlay{false};
 
     //string host = "Nebula.local";
     int width = 45, height = 45, DMXchannels = 64;

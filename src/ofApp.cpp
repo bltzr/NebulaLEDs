@@ -154,6 +154,24 @@ void ofApp::setup(){
 
 //--------------------------------------------------------------
 void ofApp::update(){
+    
+    
+    ++timeCounter;
+    if (timeCounter>3600){
+        Poco::Timestamp now;
+        Poco::LocalDateTime nowLocal(now);
+        std::string fmt = Poco::DateTimeFormat::SORTABLE_FORMAT;
+        std::string timeNow = ofxTime::Utils::format(ofxTime::Utils::floor(nowLocal, Poco::Timespan::MINUTES), fmt);
+        currentTime = (int(timeNow[11])-48)*10+int(timeNow[12])-48;
+        //ofLog() << "time: " << currentTime;
+        bool previousTime = timeToPlay;
+        timeToPlay = (currentTime > 9 && currentTime < 19);
+        if(timeToPlay!=previousTime){
+            if (timeToPlay) play();
+            else stop();
+        }
+        timeCounter=0;
+    }
 
 
     while(receiver.hasWaitingMessages()){
@@ -167,25 +185,28 @@ void ofApp::update(){
           else if(!m.getArgAsBool(0)){stop();}
         }
       
-      if(m.getAddress() == "/pause/main"){
-        ofLog() << "pause" << m.getArgAsInt32(0);
-        if(m.getArgAsBool(0)){trame.setPaused(1);}
-        else if(!m.getArgAsBool(0)){trame.setPaused(0);}
-      }
-      
-      if(m.getAddress() == "/position/main"){
-        ofLog() << "received position " << m.getArgAsFloat(0);
-        trame.setPosition(m.getArgAsFloat(0));
-   
-      }
-      
-      if(m.getAddress() == "/speed"){
-        ofLog() << "speed" << m.getArgAsFloat(0);
-        trame.setSpeed(m.getArgAsFloat(0));
-        
-      }
-      
-      else if(m.getAddress() == "/image"){
+        else if(m.getAddress() == "/pause"){
+            ofLog() << "pause" << m.getArgAsInt32(0);
+            if(m.getArgAsBool(0)){trame.setPaused(1);}
+            else if(!m.getArgAsBool(0)){trame.setPaused(0);}
+        }
+
+        else if(m.getAddress() == "/position"){
+            ofLog() << "received position " << m.getArgAsFloat(0);
+            trame.setPosition(m.getArgAsFloat(0));
+        }
+
+        else if(m.getAddress() == "/speed"){
+            ofLog() << "speed" << m.getArgAsFloat(0);
+            trame.setSpeed(m.getArgAsFloat(0));
+        }
+
+        else  if(m.getAddress() == "/host"){
+            ofLog() << "speed" << m.getArgAsString(0);
+            reconnect(m.getArgAsString(0));
+        }
+
+        else if(m.getAddress() == "/image"){
         if (!playing){
             //NetBuffer.clear();
             NetBuffer = m.getArgAsBlob(0);
@@ -196,7 +217,7 @@ void ofApp::update(){
             ofLog() << "image size: " << NetBuffer.size();
             */
           }
-      }
+        }
 
       
         
@@ -230,12 +251,11 @@ void ofApp::update(){
         
     }
   
-    trame.update();
-      
   
     // get part of the image for the LEDs
       
     if(playing){
+        trame.update();
         pixels = trame.getPixels();
         //ofLog() << "pixel format: " << pixels.getPixelFormat();
         //LEDs = pixels.getData();
