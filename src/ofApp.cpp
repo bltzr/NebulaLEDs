@@ -17,7 +17,7 @@ void ofApp::setup(){
     trame.setPixelFormat(OF_PIXELS_RGB);
   
     //trame.load("bright.mov");
-    trame.load("/data/Nebula.mov");
+    trame.load("/data/DawnChorus.mov");
     ofLog() << "Loaded Mov";
     trame.setLoopState(OF_LOOP_NORMAL);
   
@@ -67,22 +67,27 @@ void ofApp::setup(){
   
     
     // setup Serial
+    //bool printDevices = true;        // Set this to true to display the list of devices in the Log Window
+    int devNumb = 0;
+    //if (printDevices){
+    devicesInfo = ofx::IO::SerialDeviceUtils::listDevices();
     
-    std::vector<ofx::IO::SerialDeviceInfo> devicesInfo = ofx::IO::SerialDeviceUtils::listDevices();
+    ofLogNotice("ofApp::setup") << "Connected Devices: ";
+    for (ofx::IO::SerialDeviceInfo d : devicesInfo){
+        ofLogNotice("  ") << devNumb << ": " << d;
+        ++devNumb;
+    }
+    //}
     
-    ofLogNotice("ofApp::setup") << "Connected Devices: " ;
+    ofLog() << "Opening serial devices:";
+    
 
-  for (auto& device: ofxIO::SerialDeviceUtils::listDevices())
-  {
-    ofLogNotice("ofApp::setup") << "\t" << device;
-  }
-
-    device.name = portName(1369841);
-    device2.name = portName(1455771);
-    device3.name = portName(1383111);
+    device.name = portName(1369840);
+    device2.name = portName(1455770);
+    device3.name = portName(1383110);
     //device4.name = "/dev/cu.usbmodem1366241";
     //device4.name = "/dev/cu.usbmodem1365391";
-    device4.name = portName(4115521);
+    device4.name = portName(4115520);
 
     device.setup();
     device2.setup();
@@ -230,12 +235,13 @@ void ofApp::update(){
         
     }
   
-    trame.update();
+   
       
   
     // get part of the image for the LEDs
       
     if(playing){
+ 	    trame.update();
         pixels = trame.getPixels();
         //ofLog() << "pixel format: " << pixels.getPixelFormat();
         //LEDs = pixels.getData();

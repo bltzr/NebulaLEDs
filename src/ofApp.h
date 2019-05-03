@@ -122,10 +122,6 @@ public:
     string msg_strings[NUM_MSG_STRINGS];
     float timers[NUM_MSG_STRINGS];
 
-
-private:
-    void appendMessage( ofxOscMessage& message, osc::OutboundPacketStream& p );
-
     /// TODO: move this in the appropriate class
     std::vector<ofx::IO::SerialDeviceInfo> devicesInfo;
     std::string portName(int SN)
@@ -140,6 +136,9 @@ private:
         return "";
     }
     // ^
+
+private:
+    void appendMessage( ofxOscMessage& message, osc::OutboundPacketStream& p );
 
 
 };
