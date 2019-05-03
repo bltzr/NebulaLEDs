@@ -48,14 +48,17 @@ void ofApp::setup(){
     server.start();
     
     // planets senders setups
-    eclipse.setup("eclipse.local", PLANETS_PORTIN);
-    planet.setup("planet.local", PLANETS_PORTIN);
+    eclipseConnected = eclipse.setup("localhost", PLANETS_PORTIN);
+    ofLog() << "connect eclipse: " << eclipseConnected;
+    planetConnected = planet.setup("planet.local", PLANETS_PORTIN);
+    ofLog() << "connect planet: " << planetConnected;
+    
     
     ofxOscMessage m;
     m.setAddress("/pause");
     m.addIntArg(1);
-    eclipse.sendMessage(m);
-    planet.sendMessage(m);
+    if (eclipseConnected)   eclipse.sendMessage(m);
+    if (planetConnected)    planet.sendMessage(m);
 
     NetBuffer.allocate(width*height*3);
     for (int i=0;i<width*height*3;i++) NetBuffer.getData()[i] = 0;
@@ -63,6 +66,7 @@ void ofApp::setup(){
   
     if(playing){
       trame.play();
+    //trame.setPaused(1);
     }
   
     
@@ -464,12 +468,13 @@ void ofApp::sendPosition(){
     position = trame.getPosition();
     //ofLog() << "position: " << position;
     
-    ofxOscMessage m;
-    m.setAddress("/position");
-    m.addFloatArg(position);
+        ofxOscMessage m;
+        m.setAddress("/position");
+        m.addFloatArg(position);
     
-    eclipse.sendMessage(m);
-    planet.sendMessage(m);
+    if (eclipseConnected) eclipse.sendMessage(m);
+    if (planetConnected) planet.sendMessage(m);
+
 }
 
 //--------------------------------------------------------------
@@ -508,7 +513,17 @@ void ofApp::sendLine(int i) {
     }
 }
 
+//--------------------------------------------------------------
 
+void ofApp::reconnect(string host){
+    if (host =="eclipse.local") {
+        eclipseConnected = eclipse.setup("localhost", PLANETS_PORTIN);
+        ofLog() << "connect eclipse: " << eclipseConnected;
+    } else  if (host =="planet.local") {
+        planetConnected = planet.setup("planet.local", PLANETS_PORTIN);
+        ofLog() << "connect planet: " << planetConnected;
+    }
+}
 
 //-------------------------------------------------------------
 void ofApp::draw(){

@@ -118,6 +118,7 @@ public:
     void setBrightness(int line, int brightness);
     void setDither(int line, int dither);
     void cleanAll();
+    void reconnect(string host);
 
     Teensy device, device2, device3, device4;
 
