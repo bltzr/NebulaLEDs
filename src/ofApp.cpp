@@ -164,15 +164,24 @@ void ofApp::update(){
     if (timeCounter>3600){
         Poco::Timestamp now;
         Poco::LocalDateTime nowLocal(now);
-        std::string fmt = Poco::DateTimeFormat::SORTABLE_FORMAT;
+        const std::string fmt = "%w %H";
         std::string timeNow = ofxTime::Utils::format(ofxTime::Utils::floor(nowLocal, Poco::Timespan::MINUTES), fmt);
-        currentTime = (int(timeNow[11])-48)*10+int(timeNow[12])-48;
+        currentTime = (int(timeNow[4])-48)*10+int(timeNow[5])-48;
+        std::string currentDay = timeNow.substr (0,3);
         //ofLog() << "time: " << currentTime;
+        //ofLog() << "day: " << currentDay;
         bool previousTime = timeToPlay;
-        timeToPlay = (currentTime > 9 && currentTime < 19);
+        
+        //___________________________________________________________________
+        // OPENING HOURS:
+        if (currentDay == "Sat") timeToPlay = (currentTime >= 14 && currentTime < 18);
+        else if (currentDay == "Wed" || currentDay == "Thu" || currentDay == "Fri") timeToPlay = (currentTime >= 13 && currentTime < 17);
+        else timeToPlay = 0;
+        //___________________________________________________________________
+        
         if(timeToPlay!=previousTime){
-            if (timeToPlay) play();
-            else stop();
+            if (timeToPlay&&!playing) play();
+            else if (!timeToPlay&&playing) stop();
         }
         timeCounter=0;
     }
