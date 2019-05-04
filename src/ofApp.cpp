@@ -7,7 +7,7 @@ void ofApp::setup(){
     ofSetWindowTitle("NebulaLEDs");
 
     receiver.setup(PORTIN);
-    ofLog() << "Opened OSC Receiver";
+    ofLog() << "Opened OSC Receiver on port " << PORTIN  ;
   
     // display
     ofBackground(0,0,0);
@@ -173,8 +173,6 @@ void ofApp::update(){
         std::string timeNow = ofxTime::Utils::format(ofxTime::Utils::floor(nowLocal, Poco::Timespan::MINUTES), fmt);
         currentTime = (int(timeNow[4])-48)*10+int(timeNow[5])-48;
         std::string currentDay = timeNow.substr (0,3);
-        //ofLog() << "time: " << currentTime;
-        //ofLog() << "day: " << currentDay;
         bool previousTime = timeToPlay;
         
         //___________________________________________________________________
@@ -185,8 +183,11 @@ void ofApp::update(){
         //___________________________________________________________________
         
         if(timeToPlay!=previousTime){
+            ofLog() << "time: " << currentTime;
+            ofLog() << "day: " << currentDay;
             if (timeToPlay&&!playing) play();
             else if (!timeToPlay&&playing) stop();
+            ofLog() << "Time to play ? " << timeToPlay;
         }
         timeCounter=0;
     }
@@ -326,7 +327,6 @@ void ofApp::update(){
       m.setAddress("/image");
       m.addBlobArg(imgAsBuffer);
       sender.sendMessage(m);
-      
       
       PWMBuffer.clear();
       PWMBuffer.append((const char*)PWMPix.getData(), PWMPix.size());
@@ -530,12 +530,31 @@ void ofApp::sendLine(int i) {
 //--------------------------------------------------------------
 
 void ofApp::reconnect(string host){
+    ofLog() << "reconnect -" << host << "---";
     if (host =="eclipse" && !eclipseConnected) {
         eclipseConnected = eclipse.setup("eclipse.local", PLANETS_PORTIN);
         ofLog() << "connect eclipse: " << eclipseConnected;
-    } else  if (host =="planet" && !planetConnected) {
+        ofxOscMessage p;
+        p.setAddress("/reconnect");
+        p.addIntArg(1);
+        eclipse.sendMessage(p);
+    } else if (host =="eclipse" && eclipseConnected) {
+        ofxOscMessage p;
+        p.setAddress("/reconnect");
+        p.addIntArg(1);
+        eclipse.sendMessage(p);
+    } else if (host =="planet" && !planetConnected) {
         planetConnected = planet.setup("planet.local", PLANETS_PORTIN);
         ofLog() << "connect planet: " << planetConnected;
+        ofxOscMessage p;
+        p.setAddress("/reconnect");
+        p.addIntArg(1);
+        planet.sendMessage(p);
+    } else if (host =="planet" && planetConnected) {
+        ofxOscMessage p;
+        p.setAddress("/reconnect");
+        p.addIntArg(1);
+        planet.sendMessage(p);
     }
 }
 

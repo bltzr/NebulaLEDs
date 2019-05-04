@@ -7,8 +7,8 @@
 #include "ofxJSONRPC.h"
 #include "ofxTime.h"
 #define HOST "bltzr.local"
-#define PORT 12345
-#define PORTIN 98765
+#define PORT 34567
+#define PORTIN 12345
 #define NUM_MSG_STRINGS 20
 #define PLANETS_PORTIN 98765
 
