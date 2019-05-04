@@ -220,7 +220,7 @@ void ofApp::update(){
         }
 
         else  if(m.getAddress() == "/host"){
-            ofLog() << "speed" << m.getArgAsString(0);
+            ofLog() << "host: " << m.getArgAsString(0);
             reconnect(m.getArgAsString(0));
         }
 
@@ -530,10 +530,10 @@ void ofApp::sendLine(int i) {
 //--------------------------------------------------------------
 
 void ofApp::reconnect(string host){
-    if (host =="eclipse.local") {
-        eclipseConnected = eclipse.setup("localhost", PLANETS_PORTIN);
+    if (host =="eclipse" && !eclipseConnected) {
+        eclipseConnected = eclipse.setup("eclipse.local", PLANETS_PORTIN);
         ofLog() << "connect eclipse: " << eclipseConnected;
-    } else  if (host =="planet.local") {
+    } else  if (host =="planet" && !planetConnected) {
         planetConnected = planet.setup("planet.local", PLANETS_PORTIN);
         ofLog() << "connect planet: " << planetConnected;
     }
