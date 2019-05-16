@@ -154,7 +154,7 @@ void ofApp::setup(){
     ledLine[6].dev = &device4;
     ledLine[6].src = &pixels;
     ledLine[6].address = "/1";
-    ledLine[6].nbPix = 191;
+    ledLine[6].nbPix = 193;
     ledLine[6].offset = 37;
     ledLine[6].size = 5;
     ledLine[6].Xsize = 45;
@@ -173,6 +173,8 @@ void ofApp::update(){
         std::string timeNow = ofxTime::Utils::format(ofxTime::Utils::floor(nowLocal, Poco::Timespan::MINUTES), fmt);
         currentTime = (int(timeNow[4])-48)*10+int(timeNow[5])-48;
         std::string currentDay = timeNow.substr (0,3);
+        //ofLog() << "time: " << currentTime;
+        //ofLog() << "day: " << currentDay;
         bool previousTime = timeToPlay;
         
         //___________________________________________________________________
@@ -367,6 +369,17 @@ void ofApp::play(){
     trame.play();
     playing = 1;
     ofLog() << "play";
+    ofxOscMessage m;
+    m.setAddress("/play");
+    m.addIntArg(1);
+    if (eclipseConnected)   eclipse.sendMessage(m);
+    if (planetConnected)    planet.sendMessage(m);
+    
+    ofxOscMessage n;
+    n.setAddress("/pause");
+    n.addIntArg(1);
+    if (eclipseConnected)   eclipse.sendMessage(n);
+    if (planetConnected)    planet.sendMessage(n);
 }
 
 void ofApp::stop(){
@@ -374,6 +387,11 @@ void ofApp::stop(){
     stopping = 1;
     cleanAll();
     ofLog() << "stop";
+    ofxOscMessage m;
+    m.setAddress("/play");
+    m.addIntArg(0);
+    if (eclipseConnected)   eclipse.sendMessage(m);
+    if (planetConnected)    planet.sendMessage(m);
 }
 
 //--------------------------------------------------------------
@@ -674,41 +692,41 @@ void ofApp::onSerialError(const ofx::IO::SerialBufferErrorEventArgs& args)
 void ofApp::appendMessage( ofxOscMessage& message, osc::OutboundPacketStream& p )
 {
     p << osc::BeginMessage( message.getAddress().c_str() );
-	for ( int i=0; i< message.getNumArgs(); ++i )
-	{
-		if ( message.getArgType(i) == OFXOSC_TYPE_INT32 )
-			p << message.getArgAsInt32( i );
-		else if ( message.getArgType(i) == OFXOSC_TYPE_INT64 )
-			p << (osc::int64)message.getArgAsInt64( i );
-		else if ( message.getArgType( i ) == OFXOSC_TYPE_FLOAT )
-			p << message.getArgAsFloat( i );
-		else if ( message.getArgType( i ) == OFXOSC_TYPE_DOUBLE )
-			p << message.getArgAsDouble( i );
-		else if ( message.getArgType( i ) == OFXOSC_TYPE_STRING || message.getArgType( i ) == OFXOSC_TYPE_SYMBOL)
-			p << message.getArgAsString( i ).c_str();
-		else if ( message.getArgType( i ) == OFXOSC_TYPE_CHAR )
-			p << message.getArgAsChar( i );
-		//else if ( message.getArgType( i ) == OFXOSC_TYPE_MIDI_MESSAGE )
-			//p << message.getArgAsMidiMessage( i );
-		else if ( message.getArgType( i ) == OFXOSC_TYPE_TRUE || message.getArgType( i ) == OFXOSC_TYPE_FALSE )
-			p << message.getArgAsBool( i );
-		else if ( message.getArgType( i ) == OFXOSC_TYPE_TRIGGER )
-			p << message.getArgAsTrigger( i );
-		else if ( message.getArgType( i ) == OFXOSC_TYPE_TIMETAG )
-			p << (osc::int64)message.getArgAsTimetag( i );
-		//else if ( message.getArgType( i ) == OFXOSC_TYPE_RGBA_COLOR )
-		//	p << message.getArgAsRgbaColor( i );
+    for ( int i=0; i< message.getNumArgs(); ++i )
+    {
+        if ( message.getArgType(i) == OFXOSC_TYPE_INT32 )
+            p << message.getArgAsInt32( i );
+        else if ( message.getArgType(i) == OFXOSC_TYPE_INT64 )
+            p << (osc::int64)message.getArgAsInt64( i );
+        else if ( message.getArgType( i ) == OFXOSC_TYPE_FLOAT )
+            p << message.getArgAsFloat( i );
+        else if ( message.getArgType( i ) == OFXOSC_TYPE_DOUBLE )
+            p << message.getArgAsDouble( i );
+        else if ( message.getArgType( i ) == OFXOSC_TYPE_STRING || message.getArgType( i ) == OFXOSC_TYPE_SYMBOL)
+            p << message.getArgAsString( i ).c_str();
+        else if ( message.getArgType( i ) == OFXOSC_TYPE_CHAR )
+            p << message.getArgAsChar( i );
+        //else if ( message.getArgType( i ) == OFXOSC_TYPE_MIDI_MESSAGE )
+            //p << message.getArgAsMidiMessage( i );
+        else if ( message.getArgType( i ) == OFXOSC_TYPE_TRUE || message.getArgType( i ) == OFXOSC_TYPE_FALSE )
+            p << message.getArgAsBool( i );
+        else if ( message.getArgType( i ) == OFXOSC_TYPE_TRIGGER )
+            p << message.getArgAsTrigger( i );
+        else if ( message.getArgType( i ) == OFXOSC_TYPE_TIMETAG )
+            p << (osc::int64)message.getArgAsTimetag( i );
+        //else if ( message.getArgType( i ) == OFXOSC_TYPE_RGBA_COLOR )
+        //  p << message.getArgAsRgbaColor( i );
         else if ( message.getArgType( i ) == OFXOSC_TYPE_BLOB ){
             ofBuffer buff = message.getArgAsBlob(i);
             osc::Blob b(buff.getData(), (unsigned long)buff.size());
             p << b; 
-		}else
-		{
-			ofLogError("ofxOscSender") << "appendMessage(): bad argument type " << message.getArgType( i );
-			assert( false );
-		}
-	}
-	p << osc::EndMessage;
+        }else
+        {
+            ofLogError("ofxOscSender") << "appendMessage(): bad argument type " << message.getArgType( i );
+            assert( false );
+        }
+    }
+    p << osc::EndMessage;
 }
 
 

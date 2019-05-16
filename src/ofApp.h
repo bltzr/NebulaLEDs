@@ -57,7 +57,7 @@ class LedLine
     string address; // address OSC
     int nbPix; // nombre de pixels
     int offset; // offset en nombre de lignes
-    int size; // nombre de lignes ˆ prendre dans pix
+    int size; // nombre de lignes à prendre dans pix
     int Xsize; // longueur de la ligne en X
     Teensy * dev;
     ofPixels pixelCrop;
