@@ -25,7 +25,7 @@ public:
     float fps {25.};            // framerate
     
     float testingTime {1.};     // Testing time in seconds
-    float waitForFadeIn {0.1};  // Waiting time before FadeIn
+    float waitForFadeIn {0.05};  // Waiting time before FadeIn
     
     int generalBrightness {8};  // General brightness (max 31)
     
